@@ -107,13 +107,28 @@ const defaultDoctorPatientListDependencies: DoctorPatientListDependencies = {
   count: async (filter) => PatientModel.countDocuments(filter).exec(),
 };
 
-const createPatientSearchFilter = (
-  search: string | undefined,
+const createPatientFilter = (
+  query: Omit<PatientListQuery, 'doctorId'>,
   doctorId?: Types.ObjectId,
-): QueryFilter<Patient> => ({
-  ...(doctorId ? { doctorId } : {}),
-  ...(search ? { $text: { $search: search } } : {}),
-});
+): QueryFilter<Patient> => {
+  const filter: QueryFilter<Patient> = {
+    ...(doctorId ? { doctorId } : {}),
+    ...(query.search ? { $text: { $search: query.search } } : {}),
+  };
+
+  if (query.condition) {
+    filter.condition = query.condition;
+  }
+
+  if (query.createdFrom || query.createdTo) {
+    filter.createdAt = {
+      ...(query.createdFrom ? { $gte: query.createdFrom } : {}),
+      ...(query.createdTo ? { $lte: query.createdTo } : {}),
+    };
+  }
+
+  return filter;
+};
 
 export interface PatientListResult {
   patients: PatientOutput[];
@@ -141,7 +156,7 @@ export const createListDoctorPatientsService = (
       1 | -1
     >;
     const skip = (query.page - 1) * query.limit;
-    const filter = createPatientSearchFilter(query.search, doctorObjectId);
+    const filter = createPatientFilter(query, doctorObjectId);
     const [patients, total] = await Promise.all([
       dependencies.find({
         filter,
@@ -191,7 +206,10 @@ export const createListPatientsService = (
       1 | -1
     >;
     const skip = (query.page - 1) * query.limit;
-    const filter = createPatientSearchFilter(query.search);
+    const filter = createPatientFilter(
+      query,
+      query.doctorId ? new Types.ObjectId(query.doctorId) : undefined,
+    );
     const [patients, total] = await Promise.all([
       dependencies.find({ filter, skip, limit: query.limit, sort }),
       dependencies.count(filter),

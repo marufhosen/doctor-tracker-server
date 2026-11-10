@@ -61,4 +61,34 @@ describe('patient listing service', () => {
     );
     expect(dependencies.count).toHaveBeenCalledWith(filter);
   });
+
+  it('combines condition, doctor, and date filters', async () => {
+    const dependencies = {
+      find: mock(async () => [patient]),
+      count: mock(async () => 1),
+    };
+    const createdFrom = new Date('2026-01-01T00:00:00.000Z');
+    const createdTo = new Date('2026-01-31T23:59:59.999Z');
+
+    await createListPatientsService(dependencies)({
+      condition: 'Hypertension',
+      doctorId: patient.doctorId.toString(),
+      createdFrom,
+      createdTo,
+      page: 1,
+      limit: 10,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
+
+    const filter = {
+      doctorId: patient.doctorId,
+      condition: 'Hypertension',
+      createdAt: { $gte: createdFrom, $lte: createdTo },
+    };
+    expect(dependencies.find).toHaveBeenCalledWith(
+      expect.objectContaining({ filter }),
+    );
+    expect(dependencies.count).toHaveBeenCalledWith(filter);
+  });
 });
