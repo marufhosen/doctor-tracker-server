@@ -66,7 +66,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 - [x] Task 45 — Patient details
 - [x] Task 46 — Update patient
 - [x] Task 47 — Delete patient
-- [ ] Task 48 — Remove doctor's patient
+- [x] Task 48 — Remove doctor's patient
 
 ## Phase 7 — Dashboard
 

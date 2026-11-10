@@ -6,6 +6,7 @@ import { validateRequest } from '../../middlewares/validate-request.js';
 import {
   createPatientController,
   deletePatientController,
+  deleteDoctorPatientController,
   getPatientDetailsController,
   listDoctorPatientsController,
   listPatientsController,
@@ -14,12 +15,14 @@ import {
 import {
   createPatient,
   deletePatient,
+  deleteDoctorPatient,
   getPatientDetails,
   listDoctorPatients,
   listPatients,
   updatePatient,
   type CreatePatient,
   type DeletePatient,
+  type DeleteDoctorPatient,
   type GetPatientDetails,
   type ListDoctorPatients,
   type ListPatients,
@@ -28,6 +31,7 @@ import {
 import {
   createPatientRequestSchema,
   doctorPatientListRequestSchema,
+  doctorPatientDeleteRequestSchema,
   patientDetailsRequestSchema,
   patientListRequestSchema,
   updatePatientRequestSchema,
@@ -37,6 +41,7 @@ export const createDoctorPatientRouter = (
   createPatientOperation: CreatePatient = createPatient,
   authenticationMiddleware: RequestHandler = authenticate,
   listPatientsOperation: ListDoctorPatients = listDoctorPatients,
+  deletePatientOperation: DeleteDoctorPatient = deleteDoctorPatient,
 ): Router => {
   const router = Router();
 
@@ -51,6 +56,12 @@ export const createDoctorPatientRouter = (
     requireAdmin,
     validateRequest(createPatientRequestSchema),
     createPatientController(createPatientOperation),
+  );
+  router.delete(
+    '/:doctorId/patients/:patientId',
+    requireAdmin,
+    validateRequest(doctorPatientDeleteRequestSchema),
+    deleteDoctorPatientController(deletePatientOperation),
   );
 
   return router;

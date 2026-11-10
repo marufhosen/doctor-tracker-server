@@ -323,3 +323,45 @@ export const createDeletePatientService = (
 };
 
 export const deletePatient = createDeletePatientService();
+
+interface DeleteDoctorPatientDependencies {
+  doctorExists: (doctorId: Types.ObjectId) => Promise<boolean>;
+  deleteOne: (
+    filter: QueryFilter<Patient>,
+  ) => Promise<(Patient & { _id: Types.ObjectId }) | null>;
+}
+
+const defaultDeleteDoctorPatientDependencies: DeleteDoctorPatientDependencies =
+  {
+    doctorExists: defaultCreateDependencies.doctorExists,
+    deleteOne: async (filter) =>
+      PatientModel.findOneAndDelete(filter).lean().exec(),
+  };
+
+export type DeleteDoctorPatient = (
+  doctorId: string,
+  patientId: string,
+) => Promise<void>;
+
+export const createDeleteDoctorPatientService = (
+  dependencies: DeleteDoctorPatientDependencies = defaultDeleteDoctorPatientDependencies,
+): DeleteDoctorPatient => {
+  return async (doctorId, patientId) => {
+    const doctorObjectId = new Types.ObjectId(doctorId);
+
+    if (!(await dependencies.doctorExists(doctorObjectId))) {
+      throw new ApiError(404, 'Doctor not found', 'DOCTOR_NOT_FOUND');
+    }
+
+    const patient = await dependencies.deleteOne({
+      _id: new Types.ObjectId(patientId),
+      doctorId: doctorObjectId,
+    });
+
+    if (!patient) {
+      throw new ApiError(404, 'Patient not found', 'PATIENT_NOT_FOUND');
+    }
+  };
+};
+
+export const deleteDoctorPatient = createDeleteDoctorPatientService();
