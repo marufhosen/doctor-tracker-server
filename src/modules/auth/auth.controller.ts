@@ -7,6 +7,8 @@ import {
 } from '../../config/cookies.js';
 import { ApiError } from '../../utils/api-error.js';
 import {
+  logoutSession,
+  type LogoutSession,
   rotateRefreshToken,
   type RotateRefreshToken,
 } from '../sessions/session.service.js';
@@ -77,6 +79,28 @@ export const createCurrentUserController = (
       success: true,
       message: 'Current user retrieved successfully',
       data: { user },
+    });
+  };
+};
+
+export const createLogoutController = (
+  logoutService: LogoutSession = logoutSession,
+): RequestHandler => {
+  return async (request, response) => {
+    const cookies: unknown = request.cookies;
+    const refreshToken =
+      typeof cookies === 'object' && cookies !== null
+        ? (cookies as Record<string, unknown>)[REFRESH_TOKEN_COOKIE]
+        : undefined;
+
+    await logoutService(
+      typeof refreshToken === 'string' ? refreshToken : undefined,
+    );
+    clearAuthCookies(response);
+    response.status(200).json({
+      success: true,
+      message: 'Logout successful',
+      data: null,
     });
   };
 };

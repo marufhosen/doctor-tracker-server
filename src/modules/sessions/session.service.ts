@@ -236,3 +236,20 @@ export const createTokenRotationService = (
 };
 
 export const rotateRefreshToken = createTokenRotationService();
+
+export type LogoutSession = (refreshToken?: string) => Promise<void>;
+
+export const logoutSession: LogoutSession = async (refreshToken) => {
+  if (!refreshToken || !isRefreshToken(refreshToken)) {
+    return;
+  }
+
+  const now = new Date();
+  await SessionModel.updateOne(
+    {
+      refreshTokenHash: hashRefreshToken(refreshToken),
+      isRevoked: false,
+    },
+    { $set: { isRevoked: true, revokedAt: now } },
+  );
+};

@@ -5,6 +5,7 @@ import { validateRequest } from '../../middlewares/validate-request.js';
 import {
   createCurrentUserController,
   createLoginController,
+  createLogoutController,
   createRefreshController,
 } from './auth.controller.js';
 import { login, type LoginService } from './auth.service.js';
@@ -27,6 +28,7 @@ export const createAuthRouter = (
   );
   router.post('/refresh', createRefreshController(rotationService));
   router.get('/me', authenticate, createCurrentUserController());
+  router.post('/logout', createLogoutController());
 
   return router;
 };

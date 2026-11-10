@@ -42,7 +42,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 - [x] Task 27 — Authentication middleware
 - [x] Task 28 — Role middleware
 - [x] Task 29 — Current user
-- [ ] Task 30 — Logout
+- [x] Task 30 — Logout
 - [ ] Task 31 — Rate limiting
 - [ ] Task 32 — Admin bootstrap
 
