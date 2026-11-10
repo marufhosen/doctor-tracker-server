@@ -20,7 +20,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 - [x] Task 11 — User model
 - [x] Task 12 — Doctor model
 - [x] Task 13 — Patient model
-- [ ] Task 14 — Session model
+- [x] Task 14 — Session model
 - [ ] Task 15 — Refresh-token history
 
 ## Phase 3 — Authentication utilities
