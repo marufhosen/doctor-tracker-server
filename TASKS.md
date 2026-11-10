@@ -48,7 +48,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 
 ## Phase 5 — Doctor management
 
-- [ ] Task 33 — Doctor validation
+- [x] Task 33 — Doctor validation
 - [ ] Task 34 — Create doctor
 - [ ] Task 35 — Doctor listing
 - [ ] Task 36 — Doctor search
