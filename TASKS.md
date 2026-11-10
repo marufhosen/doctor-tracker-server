@@ -53,7 +53,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 - [x] Task 35 — Doctor listing
 - [x] Task 36 — Doctor search
 - [x] Task 37 — Doctor filters
-- [ ] Task 38 — Doctor details
+- [x] Task 38 — Doctor details
 
 ## Phase 6 — Patient management
 

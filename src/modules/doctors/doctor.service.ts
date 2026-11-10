@@ -4,6 +4,7 @@ import {
   createPaginationMeta,
   type PaginationMeta,
 } from '../../utils/pagination.js';
+import { ApiError } from '../../utils/api-error.js';
 import { DoctorModel } from './doctor.model.js';
 import type { Doctor } from './doctor.types.js';
 import type {
@@ -136,3 +137,29 @@ export const createListDoctorsService = (
 };
 
 export const listDoctors = createListDoctorsService();
+
+interface DoctorDetailsDependencies {
+  findById: (id: string) => Promise<(Doctor & { _id: Types.ObjectId }) | null>;
+}
+
+const defaultDetailsDependencies: DoctorDetailsDependencies = {
+  findById: async (id) => DoctorModel.findById(id).lean().exec(),
+};
+
+export type GetDoctorDetails = (id: string) => Promise<DoctorOutput>;
+
+export const createGetDoctorDetailsService = (
+  dependencies: DoctorDetailsDependencies = defaultDetailsDependencies,
+): GetDoctorDetails => {
+  return async (id) => {
+    const doctor = await dependencies.findById(id);
+
+    if (!doctor) {
+      throw new ApiError(404, 'Doctor not found', 'DOCTOR_NOT_FOUND');
+    }
+
+    return toDoctorOutput(doctor);
+  };
+};
+
+export const getDoctorDetails = createGetDoctorDetailsService();
