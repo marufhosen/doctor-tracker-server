@@ -2,12 +2,10 @@ import { randomUUID } from 'node:crypto';
 
 import type { Types } from 'mongoose';
 
-import { env } from '../../config/env.js';
 import { SessionModel } from '../sessions/session.model.js';
 import { UserModel } from '../users/user.model.js';
 import type { UserRole } from '../users/user.types.js';
 import { ApiError } from '../../utils/api-error.js';
-import { durationToMilliseconds } from '../../utils/duration.js';
 import { signAccessToken } from '../../utils/jwt.js';
 import { generateRefreshToken, hashRefreshToken } from '../../utils/tokens.js';
 import type { LoginInput } from './auth.validation.js';
@@ -17,6 +15,7 @@ import type {
   LoginUserRecord,
 } from './auth.types.js';
 import { verifyPassword } from './password.js';
+import { createSessionTiming } from './session-policy.js';
 
 interface CreateSessionInput {
   userId: Types.ObjectId;
@@ -112,15 +111,8 @@ export const createLoginService = (
     }
 
     const now = dependencies.now();
-    const sessionDuration = durationToMilliseconds(
-      input.rememberMe ? env.REMEMBER_ME_TTL : env.REFRESH_TOKEN_TTL,
-    );
-    const accessDuration = durationToMilliseconds(env.ACCESS_TOKEN_TTL);
-    const absoluteExpiresAt = new Date(now.getTime() + sessionDuration);
-    const refreshTokenExpiresAt = new Date(absoluteExpiresAt);
-    const accessTokenExpiresAt = new Date(
-      Math.min(now.getTime() + accessDuration, absoluteExpiresAt.getTime()),
-    );
+    const { accessTokenExpiresAt, refreshTokenExpiresAt, absoluteExpiresAt } =
+      createSessionTiming(input.rememberMe, now);
     const refreshToken = dependencies.generateRefreshToken();
     const refreshTokenHash = dependencies.hashRefreshToken(refreshToken);
     const sessionId = await dependencies.createSession({
