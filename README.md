@@ -1,15 +1,40 @@
-# doctor-tracker-server
+# Doctor Tracker Server
 
-To install dependencies:
+Backend REST API for the Doctor Tracker administrative application. The project uses Bun, Express, TypeScript, Mongoose, and MongoDB.
+
+## Prerequisites
+
+- [Bun](https://bun.sh/) 1.3 or newer
+- MongoDB (used by later development tasks)
+
+## Setup
+
+Install the dependencies:
 
 ```bash
 bun install
 ```
 
-To run:
+Run the development server with file watching:
 
 ```bash
-bun run index.ts
+bun run dev
 ```
 
-This project was created using `bun init` in bun v1.3.14. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+Run the server without file watching:
+
+```bash
+bun run start
+```
+
+Check the TypeScript project:
+
+```bash
+bun run typecheck
+```
+
+## Project structure
+
+Application source belongs in `src/`. Operational scripts will live in `scripts/` as they are introduced. Features, configuration, middleware, shared types, and tests will be added incrementally according to [TASKS.md](./TASKS.md).
+
+Environment files and dependencies are intentionally excluded from version control. The Bun lockfile is committed to keep dependency installation reproducible.
