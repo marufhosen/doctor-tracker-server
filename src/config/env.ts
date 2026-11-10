@@ -23,6 +23,11 @@ const envSchema = z.object({
     .string()
     .regex(/^\d+(b|kb|mb)$/i)
     .default('100kb'),
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
+  AUTH_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
+  LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
+  REFRESH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
   MONGODB_URI: z
     .string()
     .trim()

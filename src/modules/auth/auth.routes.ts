@@ -1,6 +1,10 @@
 import { Router } from 'express';
 
 import { authenticate } from '../../middlewares/authenticate.js';
+import {
+  loginLimiter,
+  refreshLimiter,
+} from '../../middlewares/rate-limiter.js';
 import { validateRequest } from '../../middlewares/validate-request.js';
 import {
   createCurrentUserController,
@@ -23,10 +27,15 @@ export const createAuthRouter = (
 
   router.post(
     '/login',
+    loginLimiter,
     validateRequest(loginRequestSchema),
     createLoginController(loginService),
   );
-  router.post('/refresh', createRefreshController(rotationService));
+  router.post(
+    '/refresh',
+    refreshLimiter,
+    createRefreshController(rotationService),
+  );
   router.get('/me', authenticate, createCurrentUserController());
   router.post('/logout', createLogoutController());
 

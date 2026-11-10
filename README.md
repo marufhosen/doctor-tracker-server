@@ -43,6 +43,8 @@ bun test
 
 Tests use synthetic configuration and must use an isolated test database when persistence coverage is introduced. Never point tests at a production database.
 
+Rate limiting uses an in-memory store by default, which is suitable only for a single application instance. Configure an appropriate shared rate-limit store before running multiple production instances.
+
 ## Project structure
 
 Application source belongs in `src/`. Operational scripts will live in `scripts/` as they are introduced. Features, configuration, middleware, shared types, and tests will be added incrementally according to [TASKS.md](./TASKS.md).

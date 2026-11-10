@@ -43,7 +43,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 - [x] Task 28 — Role middleware
 - [x] Task 29 — Current user
 - [x] Task 30 — Logout
-- [ ] Task 31 — Rate limiting
+- [x] Task 31 — Rate limiting
 - [ ] Task 32 — Admin bootstrap
 
 ## Phase 5 — Doctor management
