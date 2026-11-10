@@ -1,10 +1,17 @@
 import { Types } from 'mongoose';
 
 import { ApiError } from '../../utils/api-error.js';
+import {
+  createPaginationMeta,
+  type PaginationMeta,
+} from '../../utils/pagination.js';
 import { DoctorModel } from '../doctors/doctor.model.js';
 import { PatientModel } from './patient.model.js';
 import type { Patient } from './patient.types.js';
-import type { CreatePatientInput } from './patient.validation.js';
+import type {
+  CreatePatientInput,
+  PatientListQuery,
+} from './patient.validation.js';
 
 export interface PatientOutput {
   id: string;
@@ -81,3 +88,71 @@ export const createPatientService = (
 };
 
 export const createPatient = createPatientService();
+
+interface DoctorPatientListDependencies {
+  doctorExists: (doctorId: Types.ObjectId) => Promise<boolean>;
+  find: (input: {
+    doctorId: Types.ObjectId;
+    skip: number;
+    limit: number;
+    sort: Record<string, 1 | -1>;
+  }) => Promise<Array<Patient & { _id: Types.ObjectId }>>;
+  count: (doctorId: Types.ObjectId) => Promise<number>;
+}
+
+const defaultDoctorPatientListDependencies: DoctorPatientListDependencies = {
+  doctorExists: defaultCreateDependencies.doctorExists,
+  find: async ({ doctorId, skip, limit, sort }) =>
+    PatientModel.find({ doctorId })
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .lean()
+      .exec(),
+  count: async (doctorId) => PatientModel.countDocuments({ doctorId }).exec(),
+};
+
+export interface PatientListResult {
+  patients: PatientOutput[];
+  meta: PaginationMeta;
+}
+
+export type ListDoctorPatients = (
+  doctorId: string,
+  query: Omit<PatientListQuery, 'doctorId'>,
+) => Promise<PatientListResult>;
+
+export const createListDoctorPatientsService = (
+  dependencies: DoctorPatientListDependencies = defaultDoctorPatientListDependencies,
+): ListDoctorPatients => {
+  return async (doctorId, query) => {
+    const doctorObjectId = new Types.ObjectId(doctorId);
+
+    if (!(await dependencies.doctorExists(doctorObjectId))) {
+      throw new ApiError(404, 'Doctor not found', 'DOCTOR_NOT_FOUND');
+    }
+
+    const direction = query.sortOrder === 'asc' ? 1 : -1;
+    const sort = { [query.sortBy]: direction, _id: direction } as Record<
+      string,
+      1 | -1
+    >;
+    const skip = (query.page - 1) * query.limit;
+    const [patients, total] = await Promise.all([
+      dependencies.find({
+        doctorId: doctorObjectId,
+        skip,
+        limit: query.limit,
+        sort,
+      }),
+      dependencies.count(doctorObjectId),
+    ]);
+
+    return {
+      patients: patients.map(toPatientOutput),
+      meta: createPaginationMeta(query.page, query.limit, total),
+    };
+  };
+};
+
+export const listDoctorPatients = createListDoctorPatientsService();

@@ -1,9 +1,15 @@
 import type { RequestHandler } from 'express';
 
-import { createPatient, type CreatePatient } from './patient.service.js';
+import {
+  createPatient,
+  listDoctorPatients,
+  type CreatePatient,
+  type ListDoctorPatients,
+} from './patient.service.js';
 import type {
   CreatePatientInput,
   DoctorPatientParams,
+  PatientListQuery,
 } from './patient.validation.js';
 
 export const createPatientController = (
@@ -20,6 +26,25 @@ export const createPatientController = (
       success: true,
       message: 'Patient created successfully',
       data: { patient },
+    });
+  };
+};
+
+export const listDoctorPatientsController = (
+  listPatientsOperation: ListDoctorPatients = listDoctorPatients,
+): RequestHandler => {
+  return async (request, response) => {
+    const { doctorId } = request.validated.params as DoctorPatientParams;
+    const result = await listPatientsOperation(
+      doctorId,
+      request.validated.query as Omit<PatientListQuery, 'doctorId'>,
+    );
+
+    response.status(200).json({
+      success: true,
+      message: 'Doctor patients retrieved successfully',
+      data: result.patients,
+      meta: result.meta,
     });
   };
 };

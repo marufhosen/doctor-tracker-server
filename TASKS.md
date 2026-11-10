@@ -59,7 +59,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 
 - [x] Task 39 — Patient validation
 - [x] Task 40 — Create patient
-- [ ] Task 41 — Doctor patient listing
+- [x] Task 41 — Doctor patient listing
 - [ ] Task 42 — Patient listing
 - [ ] Task 43 — Patient search
 - [ ] Task 44 — Patient filtering
