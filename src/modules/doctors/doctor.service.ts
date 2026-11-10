@@ -82,9 +82,28 @@ const defaultListDependencies: DoctorListDependencies = {
   count: async (filter) => DoctorModel.countDocuments(filter).exec(),
 };
 
-const createDoctorSearchFilter = (
-  search: string | undefined,
-): QueryFilter<Doctor> => (search ? { $text: { $search: search } } : {});
+const createDoctorFilter = (query: DoctorListQuery): QueryFilter<Doctor> => {
+  const filter: QueryFilter<Doctor> = query.search
+    ? { $text: { $search: query.search } }
+    : {};
+
+  if (query.specialization) {
+    filter.specialization = query.specialization;
+  }
+
+  if (query.hospital) {
+    filter.hospital = query.hospital;
+  }
+
+  if (query.createdFrom || query.createdTo) {
+    filter.createdAt = {
+      ...(query.createdFrom ? { $gte: query.createdFrom } : {}),
+      ...(query.createdTo ? { $lte: query.createdTo } : {}),
+    };
+  }
+
+  return filter;
+};
 
 export interface DoctorListResult {
   doctors: DoctorOutput[];
@@ -97,7 +116,7 @@ export const createListDoctorsService = (
   dependencies: DoctorListDependencies = defaultListDependencies,
 ): ListDoctors => {
   return async (query) => {
-    const filter = createDoctorSearchFilter(query.search);
+    const filter = createDoctorFilter(query);
     const direction = query.sortOrder === 'asc' ? 1 : -1;
     const sort: Record<string, 1 | -1> = {
       [query.sortBy]: direction,

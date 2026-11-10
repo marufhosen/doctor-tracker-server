@@ -81,4 +81,35 @@ describe('doctor listing service', () => {
     );
     expect(dependencies.count).toHaveBeenCalledWith(filter);
   });
+
+  it('combines specialization, hospital, and date filters safely', async () => {
+    const dependencies = {
+      find: mock(async () => [doctor]),
+      count: mock(async () => 1),
+    };
+    const listDoctors = createListDoctorsService(dependencies);
+    const createdFrom = new Date('2026-01-01T00:00:00.000Z');
+    const createdTo = new Date('2026-01-31T23:59:59.999Z');
+
+    await listDoctors({
+      specialization: 'Cardiology',
+      hospital: 'City Hospital',
+      createdFrom,
+      createdTo,
+      page: 1,
+      limit: 10,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
+
+    const filter = {
+      specialization: 'Cardiology',
+      hospital: 'City Hospital',
+      createdAt: { $gte: createdFrom, $lte: createdTo },
+    };
+    expect(dependencies.find).toHaveBeenCalledWith(
+      expect.objectContaining({ filter }),
+    );
+    expect(dependencies.count).toHaveBeenCalledWith(filter);
+  });
 });
