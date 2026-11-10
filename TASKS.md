@@ -26,7 +26,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 ## Phase 3 — Authentication utilities
 
 - [x] Task 16 — Password hashing
-- [ ] Task 17 — JWT utilities
+- [x] Task 17 — JWT utilities
 - [ ] Task 18 — Refresh-token utilities
 - [ ] Task 19 — Authentication cookies
 
