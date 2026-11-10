@@ -44,6 +44,11 @@ const createDependencies = () => ({
     refreshTokenExpiresAt: absoluteExpiresAt,
     absoluteExpiresAt,
   })),
+  findConsumedToken: mock(
+    async (): Promise<{ sessionId: string; tokenFamilyId: string } | null> =>
+      null,
+  ),
+  revokeTokenFamily: mock(async () => undefined),
   findUser: mock(async () => ({
     id: userId.toString(),
     name: 'System Admin',
@@ -121,5 +126,26 @@ describe('token rotation service', () => {
     await expect(
       createTokenRotationService(consumedDependencies)(generateRefreshToken()),
     ).rejects.toMatchObject({ statusCode: 401, code: 'INVALID_REFRESH_TOKEN' });
+  });
+
+  it('revokes the token family when a consumed token is replayed', async () => {
+    const dependencies = createDependencies();
+    dependencies.consumeToken.mockImplementation(async () => null);
+    dependencies.findConsumedToken.mockImplementation(async () => ({
+      sessionId: 'session-id',
+      tokenFamilyId: 'family-id',
+    }));
+
+    await expect(
+      createTokenRotationService(dependencies)(generateRefreshToken()),
+    ).rejects.toMatchObject({
+      statusCode: 401,
+      code: 'REFRESH_TOKEN_REUSED',
+    });
+    expect(dependencies.revokeTokenFamily).toHaveBeenCalledWith(
+      'family-id',
+      now,
+    );
+    expect(dependencies.signAccessToken).not.toHaveBeenCalled();
   });
 });

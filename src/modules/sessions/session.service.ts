@@ -43,6 +43,10 @@ interface RotationDependencies {
     nextHash: string;
     now: Date;
   }) => Promise<ConsumedSession | null>;
+  findConsumedToken: (
+    tokenHash: string,
+  ) => Promise<{ sessionId: string; tokenFamilyId: string } | null>;
+  revokeTokenFamily: (tokenFamilyId: string, now: Date) => Promise<void>;
   findUser: (userId: Types.ObjectId) => Promise<RotationUser | null>;
   revokeSession: (sessionId: string, now: Date) => Promise<void>;
   signAccessToken: (input: {
@@ -116,6 +120,23 @@ export const consumeRefreshTokenAtomically: RotationDependencies['consumeToken']
 
 const defaultDependencies: RotationDependencies = {
   consumeToken: consumeRefreshTokenAtomically,
+  findConsumedToken: async (tokenHash) => {
+    const consumedToken = await RefreshTokenHistoryModel.findOne({ tokenHash })
+      .select('sessionId tokenFamilyId')
+      .exec();
+    return consumedToken
+      ? {
+          sessionId: consumedToken.sessionId.toString(),
+          tokenFamilyId: consumedToken.tokenFamilyId,
+        }
+      : null;
+  },
+  revokeTokenFamily: async (tokenFamilyId, now) => {
+    await SessionModel.updateMany(
+      { tokenFamilyId, isRevoked: false },
+      { $set: { isRevoked: true, revokedAt: now } },
+    );
+  },
   findUser: async (userId) => {
     const user = await UserModel.findById(userId).exec();
     return user
@@ -163,6 +184,17 @@ export const createTokenRotationService = (
     });
 
     if (!session) {
+      const replay = await dependencies.findConsumedToken(currentHash);
+
+      if (replay) {
+        await dependencies.revokeTokenFamily(replay.tokenFamilyId, now);
+        throw new ApiError(
+          401,
+          'Refresh token reuse detected',
+          'REFRESH_TOKEN_REUSED',
+        );
+      }
+
       throw new ApiError(401, 'Invalid refresh token', 'INVALID_REFRESH_TOKEN');
     }
 
