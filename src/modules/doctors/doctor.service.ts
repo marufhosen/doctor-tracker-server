@@ -1,8 +1,15 @@
 import { Types } from 'mongoose';
 
+import {
+  createPaginationMeta,
+  type PaginationMeta,
+} from '../../utils/pagination.js';
 import { DoctorModel } from './doctor.model.js';
 import type { Doctor } from './doctor.types.js';
-import type { CreateDoctorInput } from './doctor.validation.js';
+import type {
+  CreateDoctorInput,
+  DoctorListQuery,
+} from './doctor.validation.js';
 
 export interface DoctorOutput {
   id: string;
@@ -58,3 +65,49 @@ export const createDoctorService = (
 };
 
 export const createDoctor = createDoctorService();
+
+interface DoctorListDependencies {
+  find: (input: {
+    skip: number;
+    limit: number;
+    sort: Record<string, 1 | -1>;
+  }) => Promise<Array<Doctor & { _id: Types.ObjectId }>>;
+  count: () => Promise<number>;
+}
+
+const defaultListDependencies: DoctorListDependencies = {
+  find: async ({ skip, limit, sort }) =>
+    DoctorModel.find({}).sort(sort).skip(skip).limit(limit).lean().exec(),
+  count: async () => DoctorModel.countDocuments({}).exec(),
+};
+
+export interface DoctorListResult {
+  doctors: DoctorOutput[];
+  meta: PaginationMeta;
+}
+
+export type ListDoctors = (query: DoctorListQuery) => Promise<DoctorListResult>;
+
+export const createListDoctorsService = (
+  dependencies: DoctorListDependencies = defaultListDependencies,
+): ListDoctors => {
+  return async (query) => {
+    const direction = query.sortOrder === 'asc' ? 1 : -1;
+    const sort: Record<string, 1 | -1> = {
+      [query.sortBy]: direction,
+      _id: direction,
+    };
+    const skip = (query.page - 1) * query.limit;
+    const [doctors, total] = await Promise.all([
+      dependencies.find({ skip, limit: query.limit, sort }),
+      dependencies.count(),
+    ]);
+
+    return {
+      doctors: doctors.map(toDoctorOutput),
+      meta: createPaginationMeta(query.page, query.limit, total),
+    };
+  };
+};
+
+export const listDoctors = createListDoctorsService();
