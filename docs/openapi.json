@@ -1,0 +1,780 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Doctor Tracker API",
+    "version": "1.0.0",
+    "description": "Administrative API for authentication, doctors, patients, and dashboard analytics. Postman stores authentication cookies automatically after login. For unsafe requests, set Origin to the configured frontend origin and copy the doctor_tracker_csrf cookie into X-CSRF-Token."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000/api/v1",
+      "description": "Local development"
+    }
+  ],
+  "tags": [
+    { "name": "System" },
+    { "name": "Authentication" },
+    { "name": "Doctors" },
+    { "name": "Patients" },
+    { "name": "Dashboard" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Service health",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": { "status": { "const": "ok" } },
+                          "required": ["status"]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Log in",
+        "operationId": "login",
+        "parameters": [{ "$ref": "#/components/parameters/Origin" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginInput" },
+              "example": {
+                "email": "admin@example.com",
+                "password": "replace-with-secure-password",
+                "rememberMe": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful; authentication cookies are set",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Rotate refresh token",
+        "operationId": "refreshSession",
+        "security": [{ "refreshCookie": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/CsrfToken" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session refreshed and cookies rotated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get current user",
+        "operationId": "getCurrentUser",
+        "security": [{ "accessCookie": [] }],
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Log out",
+        "operationId": "logout",
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/CsrfToken" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session revoked and cookies cleared",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NullResponse" }
+              }
+            }
+          },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/doctors": {
+      "get": {
+        "tags": ["Doctors"],
+        "summary": "List doctors",
+        "operationId": "listDoctors",
+        "security": [{ "accessCookie": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Search" },
+          {
+            "name": "specialization",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 120 }
+          },
+          {
+            "name": "hospital",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 160 }
+          },
+          { "$ref": "#/components/parameters/CreatedFrom" },
+          { "$ref": "#/components/parameters/CreatedTo" },
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/Limit" },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["name", "specialization", "hospital", "createdAt"],
+              "default": "createdAt"
+            }
+          },
+          { "$ref": "#/components/parameters/SortOrder" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated doctors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/SuccessEnvelope" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/Doctor" }
+                        },
+                        "meta": {
+                          "$ref": "#/components/schemas/PaginationMeta"
+                        }
+                      },
+                      "required": ["data", "meta"]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Doctors"],
+        "summary": "Create doctor",
+        "operationId": "createDoctor",
+        "security": [{ "accessCookie": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/CsrfToken" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DoctorInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Doctor created" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/doctors/{id}": {
+      "get": {
+        "tags": ["Doctors"],
+        "summary": "Get doctor details",
+        "operationId": "getDoctor",
+        "security": [{ "accessCookie": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/DoctorId" }],
+        "responses": {
+          "200": { "description": "Doctor details" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/doctors/{doctorId}/patients": {
+      "get": {
+        "tags": ["Patients"],
+        "summary": "List a doctor's patients",
+        "operationId": "listDoctorPatients",
+        "security": [{ "accessCookie": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/DoctorPathId" },
+          { "$ref": "#/components/parameters/Search" },
+          {
+            "name": "condition",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 200 }
+          },
+          { "$ref": "#/components/parameters/CreatedFrom" },
+          { "$ref": "#/components/parameters/CreatedTo" },
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/Limit" },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["name", "condition", "age", "createdAt"],
+              "default": "createdAt"
+            }
+          },
+          { "$ref": "#/components/parameters/SortOrder" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated patients" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "post": {
+        "tags": ["Patients"],
+        "summary": "Create patient under doctor",
+        "operationId": "createPatient",
+        "security": [{ "accessCookie": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/DoctorPathId" },
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/CsrfToken" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PatientInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Patient created" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/doctors/{doctorId}/patients/{patientId}": {
+      "delete": {
+        "tags": ["Patients"],
+        "summary": "Delete a doctor's patient",
+        "operationId": "deleteDoctorPatient",
+        "security": [{ "accessCookie": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/DoctorPathId" },
+          { "$ref": "#/components/parameters/PatientPathId" },
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/CsrfToken" }
+        ],
+        "responses": {
+          "200": { "description": "Patient deleted" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/patients": {
+      "get": {
+        "tags": ["Patients"],
+        "summary": "List all patients",
+        "operationId": "listPatients",
+        "security": [{ "accessCookie": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Search" },
+          {
+            "name": "condition",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 200 }
+          },
+          {
+            "name": "doctorId",
+            "in": "query",
+            "schema": { "$ref": "#/components/schemas/ObjectId" }
+          },
+          { "$ref": "#/components/parameters/CreatedFrom" },
+          { "$ref": "#/components/parameters/CreatedTo" },
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/Limit" },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["name", "condition", "age", "createdAt"],
+              "default": "createdAt"
+            }
+          },
+          { "$ref": "#/components/parameters/SortOrder" }
+        ],
+        "responses": {
+          "200": { "description": "Paginated patients" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/patients/{id}": {
+      "get": {
+        "tags": ["Patients"],
+        "summary": "Get patient details",
+        "operationId": "getPatient",
+        "security": [{ "accessCookie": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/PatientId" }],
+        "responses": {
+          "200": { "description": "Patient details" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "patch": {
+        "tags": ["Patients"],
+        "summary": "Update patient",
+        "operationId": "updatePatient",
+        "security": [{ "accessCookie": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/PatientId" },
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/CsrfToken" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PatientUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Patient updated" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Patients"],
+        "summary": "Delete patient",
+        "operationId": "deletePatient",
+        "security": [{ "accessCookie": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/PatientId" },
+          { "$ref": "#/components/parameters/Origin" },
+          { "$ref": "#/components/parameters/CsrfToken" }
+        ],
+        "responses": {
+          "200": { "description": "Patient deleted" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/dashboard/summary": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get summary statistics",
+        "operationId": "getDashboardSummary",
+        "security": [{ "accessCookie": [] }],
+        "responses": {
+          "200": { "description": "Doctor and patient totals" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/dashboard/patients-by-doctor": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get patient counts by doctor",
+        "operationId": "getPatientsByDoctor",
+        "security": [{ "accessCookie": [] }],
+        "responses": {
+          "200": {
+            "description": "Patient counts including doctors with zero patients"
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/dashboard/trends": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get date-based creation trends",
+        "operationId": "getDashboardTrends",
+        "security": [{ "accessCookie": [] }],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": { "type": "string", "format": "date-time" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "UTC daily doctor and patient creation trends"
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "accessCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "doctor_tracker_access"
+      },
+      "refreshCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "doctor_tracker_refresh"
+      }
+    },
+    "parameters": {
+      "Origin": {
+        "name": "Origin",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uri",
+          "default": "http://localhost:3000"
+        },
+        "description": "Must exactly match CORS_ORIGIN"
+      },
+      "CsrfToken": {
+        "name": "X-CSRF-Token",
+        "in": "header",
+        "required": true,
+        "schema": { "type": "string", "pattern": "^[A-Za-z0-9_-]{43}$" },
+        "description": "Copy the doctor_tracker_csrf cookie value"
+      },
+      "DoctorId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "$ref": "#/components/schemas/ObjectId" }
+      },
+      "DoctorPathId": {
+        "name": "doctorId",
+        "in": "path",
+        "required": true,
+        "schema": { "$ref": "#/components/schemas/ObjectId" }
+      },
+      "PatientId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "$ref": "#/components/schemas/ObjectId" }
+      },
+      "PatientPathId": {
+        "name": "patientId",
+        "in": "path",
+        "required": true,
+        "schema": { "$ref": "#/components/schemas/ObjectId" }
+      },
+      "Search": {
+        "name": "search",
+        "in": "query",
+        "schema": { "type": "string", "minLength": 1, "maxLength": 100 }
+      },
+      "CreatedFrom": {
+        "name": "createdFrom",
+        "in": "query",
+        "schema": { "type": "string", "format": "date-time" }
+      },
+      "CreatedTo": {
+        "name": "createdTo",
+        "in": "query",
+        "schema": { "type": "string", "format": "date-time" }
+      },
+      "Page": {
+        "name": "page",
+        "in": "query",
+        "schema": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "Limit": {
+        "name": "limit",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 10
+        }
+      },
+      "SortOrder": {
+        "name": "sortOrder",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": ["asc", "desc"],
+          "default": "desc"
+        }
+      }
+    },
+    "schemas": {
+      "ObjectId": {
+        "type": "string",
+        "pattern": "^[a-fA-F0-9]{24}$",
+        "example": "671000000000000000000001"
+      },
+      "SuccessEnvelope": {
+        "type": "object",
+        "properties": {
+          "success": { "const": true },
+          "message": { "type": "string" }
+        },
+        "required": ["success", "message"]
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "properties": {
+          "success": { "const": false },
+          "message": { "type": "string" },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string" },
+              "details": {}
+            },
+            "required": ["code"]
+          }
+        },
+        "required": ["success", "message", "error"]
+      },
+      "LoginInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "minLength": 1, "maxLength": 256 },
+          "rememberMe": { "type": "boolean", "default": false }
+        },
+        "required": ["email", "password"]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "#/components/schemas/ObjectId" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "type": "string", "enum": ["ADMIN", "USER"] }
+        },
+        "required": ["id", "name", "email", "role"]
+      },
+      "UserResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessEnvelope" },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "user": { "$ref": "#/components/schemas/User" }
+                },
+                "required": ["user"]
+              }
+            },
+            "required": ["data"]
+          }
+        ]
+      },
+      "DoctorInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "specialization": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "hospital": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "phone": { "type": "string", "maxLength": 21 },
+          "email": { "type": "string", "format": "email", "maxLength": 254 }
+        },
+        "required": ["name", "specialization", "hospital", "phone", "email"]
+      },
+      "Doctor": {
+        "allOf": [
+          { "$ref": "#/components/schemas/DoctorInput" },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/ObjectId" },
+              "createdBy": { "$ref": "#/components/schemas/ObjectId" },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "updatedAt": { "type": "string", "format": "date-time" }
+            },
+            "required": ["id", "createdAt", "updatedAt"]
+          }
+        ]
+      },
+      "PatientInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "condition": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "phone": { "type": "string", "maxLength": 21 },
+          "email": { "type": "string", "format": "email", "maxLength": 254 },
+          "age": { "type": "integer", "minimum": 0, "maximum": 150 },
+          "gender": { "type": "string", "enum": ["MALE", "FEMALE", "OTHER"] },
+          "address": { "type": "string", "minLength": 1, "maxLength": 500 }
+        },
+        "required": ["name", "condition"]
+      },
+      "PatientUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "condition": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "phone": { "type": "string", "maxLength": 21 },
+          "email": { "type": "string", "format": "email", "maxLength": 254 },
+          "age": { "type": "integer", "minimum": 0, "maximum": 150 },
+          "gender": { "type": "string", "enum": ["MALE", "FEMALE", "OTHER"] },
+          "address": { "type": "string", "minLength": 1, "maxLength": 500 }
+        }
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "page": { "type": "integer" },
+          "limit": { "type": "integer" },
+          "total": { "type": "integer" },
+          "totalPages": { "type": "integer" }
+        },
+        "required": ["page", "limit", "total", "totalPages"]
+      },
+      "NullResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SuccessEnvelope" },
+          {
+            "type": "object",
+            "properties": { "data": { "type": "null" } },
+            "required": ["data"]
+          }
+        ]
+      }
+    },
+    "responses": {
+      "ValidationError": {
+        "description": "Request validation failed",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Authentication failed",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Authorization or CSRF check failed",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Rate limit exceeded",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      }
+    }
+  }
+}
