@@ -11,6 +11,7 @@ import { notFound } from './middlewares/not-found.js';
 import { apiLimiter } from './middlewares/rate-limiter.js';
 import { requestLogger } from './middlewares/request-logger.js';
 import { authRouter } from './modules/auth/auth.routes.js';
+import { dashboardRouter } from './modules/dashboard/dashboard.routes.js';
 import { doctorRouter } from './modules/doctors/doctor.routes.js';
 import {
   doctorPatientRouter,
@@ -42,6 +43,7 @@ export const createApp = (): Express => {
   });
 
   app.use('/api/v1/auth', authRouter);
+  app.use('/api/v1/dashboard', dashboardRouter);
   app.use('/api/v1/doctors', doctorPatientRouter);
   app.use('/api/v1/doctors', doctorRouter);
   app.use('/api/v1/patients', patientRouter);
