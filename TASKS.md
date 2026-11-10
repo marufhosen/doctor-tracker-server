@@ -32,7 +32,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 
 ## Phase 4 — Authentication features
 
-- [ ] Task 20 — Login validation
+- [x] Task 20 — Login validation
 - [ ] Task 21 — Login service
 - [ ] Task 22 — Login endpoint
 - [ ] Task 23 — Remember Me
