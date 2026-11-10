@@ -9,6 +9,7 @@ import { csrfProtection } from './middlewares/csrf.js';
 import { errorHandler } from './middlewares/error-handler.js';
 import { notFound } from './middlewares/not-found.js';
 import { requestLogger } from './middlewares/request-logger.js';
+import { authRouter } from './modules/auth/auth.routes.js';
 
 export const createApp = (): Express => {
   const app = express();
@@ -32,6 +33,8 @@ export const createApp = (): Express => {
       data: { status: 'ok' },
     });
   });
+
+  app.use('/api/v1/auth', authRouter);
 
   app.use(notFound);
   app.use(errorHandler);

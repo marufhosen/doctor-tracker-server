@@ -47,6 +47,11 @@ interface LoginServiceDependencies {
   now: () => Date;
 }
 
+export type LoginService = (
+  input: LoginInput,
+  context?: LoginContext,
+) => Promise<LoginResult>;
+
 const defaultDependencies: LoginServiceDependencies = {
   findUserByEmail: async (email) => {
     const user = await UserModel.findOne({ email })
@@ -84,7 +89,7 @@ const defaultDependencies: LoginServiceDependencies = {
 
 export const createLoginService = (
   dependencies: LoginServiceDependencies = defaultDependencies,
-) => {
+): LoginService => {
   return async (
     input: LoginInput,
     context: LoginContext = {},
