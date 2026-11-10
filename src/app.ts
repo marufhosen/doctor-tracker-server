@@ -5,6 +5,7 @@ import helmet from 'helmet';
 
 import { corsOptions } from './config/cors.js';
 import { env } from './config/env.js';
+import { csrfProtection } from './middlewares/csrf.js';
 import { errorHandler } from './middlewares/error-handler.js';
 import { notFound } from './middlewares/not-found.js';
 import { requestLogger } from './middlewares/request-logger.js';
@@ -22,6 +23,7 @@ export const createApp = (): Express => {
     express.urlencoded({ extended: false, limit: env.REQUEST_BODY_LIMIT }),
   );
   app.use(cookieParser());
+  app.use(csrfProtection);
 
   app.get('/api/v1/health', (_request: Request, response: Response) => {
     response.status(200).json({
