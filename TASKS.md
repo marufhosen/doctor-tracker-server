@@ -5,7 +5,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 ## Phase 1 — Foundation
 
 - [x] Task 01 — Configure existing project
-- [ ] Task 02 — Configure code quality
+- [x] Task 02 — Configure code quality
 - [ ] Task 03 — Environment configuration
 - [ ] Task 04 — MongoDB connection
 - [ ] Task 05 — Express bootstrap
