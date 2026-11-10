@@ -6,7 +6,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 
 - [x] Task 01 — Configure existing project
 - [x] Task 02 — Configure code quality
-- [ ] Task 03 — Environment configuration
+- [x] Task 03 — Environment configuration
 - [ ] Task 04 — MongoDB connection
 - [ ] Task 05 — Express bootstrap
 - [ ] Task 06 — Security middleware

@@ -15,6 +15,8 @@ Install the dependencies:
 bun install
 ```
 
+Copy `.env.example` to `.env` and replace every placeholder with a local value. Use a cryptographically random JWT secret of at least 32 characters. Environment configuration is validated when the application starts.
+
 Run the development server with file watching:
 
 ```bash
