@@ -51,7 +51,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 - [x] Task 33 — Doctor validation
 - [x] Task 34 — Create doctor
 - [x] Task 35 — Doctor listing
-- [ ] Task 36 — Doctor search
+- [x] Task 36 — Doctor search
 - [ ] Task 37 — Doctor filters
 - [ ] Task 38 — Doctor details
 

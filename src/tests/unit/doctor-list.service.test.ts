@@ -30,6 +30,7 @@ describe('doctor listing service', () => {
     });
 
     expect(dependencies.find).toHaveBeenCalledWith({
+      filter: {},
       skip: 10,
       limit: 10,
       sort: { name: 1, _id: 1 },
@@ -57,5 +58,27 @@ describe('doctor listing service', () => {
     });
 
     expect(result.meta.totalPages).toBe(0);
+  });
+
+  it('uses the bounded MongoDB text index for search', async () => {
+    const dependencies = {
+      find: mock(async () => [doctor]),
+      count: mock(async () => 1),
+    };
+    const listDoctors = createListDoctorsService(dependencies);
+
+    await listDoctors({
+      search: 'Samira Cardiology',
+      page: 1,
+      limit: 10,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
+
+    const filter = { $text: { $search: 'Samira Cardiology' } };
+    expect(dependencies.find).toHaveBeenCalledWith(
+      expect.objectContaining({ filter }),
+    );
+    expect(dependencies.count).toHaveBeenCalledWith(filter);
   });
 });

@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { Types, type FilterQuery } from 'mongoose';
 
 import {
   createPaginationMeta,
@@ -68,18 +68,23 @@ export const createDoctor = createDoctorService();
 
 interface DoctorListDependencies {
   find: (input: {
+    filter: FilterQuery<Doctor>;
     skip: number;
     limit: number;
     sort: Record<string, 1 | -1>;
   }) => Promise<Array<Doctor & { _id: Types.ObjectId }>>;
-  count: () => Promise<number>;
+  count: (filter: FilterQuery<Doctor>) => Promise<number>;
 }
 
 const defaultListDependencies: DoctorListDependencies = {
-  find: async ({ skip, limit, sort }) =>
-    DoctorModel.find({}).sort(sort).skip(skip).limit(limit).lean().exec(),
-  count: async () => DoctorModel.countDocuments({}).exec(),
+  find: async ({ filter, skip, limit, sort }) =>
+    DoctorModel.find(filter).sort(sort).skip(skip).limit(limit).lean().exec(),
+  count: async (filter) => DoctorModel.countDocuments(filter).exec(),
 };
+
+const createDoctorSearchFilter = (
+  search: string | undefined,
+): FilterQuery<Doctor> => (search ? { $text: { $search: search } } : {});
 
 export interface DoctorListResult {
   doctors: DoctorOutput[];
@@ -92,6 +97,7 @@ export const createListDoctorsService = (
   dependencies: DoctorListDependencies = defaultListDependencies,
 ): ListDoctors => {
   return async (query) => {
+    const filter = createDoctorSearchFilter(query.search);
     const direction = query.sortOrder === 'asc' ? 1 : -1;
     const sort: Record<string, 1 | -1> = {
       [query.sortBy]: direction,
@@ -99,8 +105,8 @@ export const createListDoctorsService = (
     };
     const skip = (query.page - 1) * query.limit;
     const [doctors, total] = await Promise.all([
-      dependencies.find({ skip, limit: query.limit, sort }),
-      dependencies.count(),
+      dependencies.find({ filter, skip, limit: query.limit, sort }),
+      dependencies.count(filter),
     ]);
 
     return {
