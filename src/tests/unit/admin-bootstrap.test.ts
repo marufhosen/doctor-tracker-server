@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it, mock } from 'bun:test';
 import type * as AdminBootstrap from '../../modules/users/admin-bootstrap.js';
 
 let createAdminBootstrap: typeof AdminBootstrap.createAdminBootstrap;
+let configuredAdminName: string;
 
 beforeAll(async () => {
   Object.assign(process.env, {
@@ -18,6 +19,9 @@ beforeAll(async () => {
 
   ({ createAdminBootstrap } =
     await import('../../modules/users/admin-bootstrap.js'));
+  ({ ADMIN_NAME: configuredAdminName } = (
+    await import('../../config/env.js')
+  ).env);
 });
 
 const createDependencies = (exists: boolean) => ({
@@ -34,7 +38,7 @@ describe('administrator bootstrap', () => {
     expect(dependencies.findByEmail).toHaveBeenCalledWith('admin@example.com');
     expect(dependencies.hashPassword).toHaveBeenCalledWith('secure-password');
     expect(dependencies.createAdmin).toHaveBeenCalledWith({
-      name: 'System Admin',
+      name: configuredAdminName,
       email: 'admin@example.com',
       passwordHash: 'argon2id-hash',
     });
