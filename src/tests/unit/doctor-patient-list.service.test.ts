@@ -30,13 +30,35 @@ describe('doctor patient listing service', () => {
     });
 
     expect(dependencies.find).toHaveBeenCalledWith({
-      doctorId,
+      filter: { doctorId },
       skip: 10,
       limit: 10,
       sort: { createdAt: -1, _id: -1 },
     });
     expect(result.meta.totalPages).toBe(2);
     expect(result.patients[0]?.doctorId).toBe(doctorId.toString());
+  });
+
+  it('searches only within the selected doctor', async () => {
+    const dependencies = {
+      doctorExists: mock(async () => true),
+      find: mock(async () => [patient]),
+      count: mock(async () => 1),
+    };
+
+    await createListDoctorPatientsService(dependencies)(doctorId.toString(), {
+      search: 'Rahim',
+      page: 1,
+      limit: 10,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
+
+    const filter = { doctorId, $text: { $search: 'Rahim' } };
+    expect(dependencies.find).toHaveBeenCalledWith(
+      expect.objectContaining({ filter }),
+    );
+    expect(dependencies.count).toHaveBeenCalledWith(filter);
   });
 
   it('rejects a missing doctor even when no patients exist', async () => {

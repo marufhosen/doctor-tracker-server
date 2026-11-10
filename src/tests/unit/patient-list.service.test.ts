@@ -40,4 +40,25 @@ describe('patient listing service', () => {
       totalPages: 3,
     });
   });
+
+  it('uses the patient text index for bounded search', async () => {
+    const dependencies = {
+      find: mock(async () => [patient]),
+      count: mock(async () => 1),
+    };
+
+    await createListPatientsService(dependencies)({
+      search: 'Rahim',
+      page: 1,
+      limit: 10,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
+
+    const filter = { $text: { $search: 'Rahim' } };
+    expect(dependencies.find).toHaveBeenCalledWith(
+      expect.objectContaining({ filter }),
+    );
+    expect(dependencies.count).toHaveBeenCalledWith(filter);
+  });
 });
