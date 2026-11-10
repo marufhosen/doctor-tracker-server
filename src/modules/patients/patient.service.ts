@@ -11,6 +11,7 @@ import type { Patient } from './patient.types.js';
 import type {
   CreatePatientInput,
   PatientListQuery,
+  UpdatePatientInput,
 } from './patient.validation.js';
 
 export interface PatientOutput {
@@ -251,3 +252,45 @@ export const createGetPatientDetailsService = (
 };
 
 export const getPatientDetails = createGetPatientDetailsService();
+
+interface UpdatePatientDependencies {
+  updateById: (
+    patientId: Types.ObjectId,
+    input: UpdatePatientInput,
+  ) => Promise<(Patient & { _id: Types.ObjectId }) | null>;
+}
+
+const defaultUpdatePatientDependencies: UpdatePatientDependencies = {
+  updateById: async (patientId, input) =>
+    PatientModel.findByIdAndUpdate(
+      patientId,
+      { $set: input },
+      { new: true, runValidators: true },
+    )
+      .lean()
+      .exec(),
+};
+
+export type UpdatePatient = (
+  patientId: string,
+  input: UpdatePatientInput,
+) => Promise<PatientOutput>;
+
+export const createUpdatePatientService = (
+  dependencies: UpdatePatientDependencies = defaultUpdatePatientDependencies,
+): UpdatePatient => {
+  return async (patientId, input) => {
+    const patient = await dependencies.updateById(
+      new Types.ObjectId(patientId),
+      input,
+    );
+
+    if (!patient) {
+      throw new ApiError(404, 'Patient not found', 'PATIENT_NOT_FOUND');
+    }
+
+    return toPatientOutput(patient);
+  };
+};
+
+export const updatePatient = createUpdatePatientService();

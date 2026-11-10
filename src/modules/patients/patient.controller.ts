@@ -5,16 +5,19 @@ import {
   getPatientDetails,
   listDoctorPatients,
   listPatients,
+  updatePatient,
   type CreatePatient,
   type GetPatientDetails,
   type ListDoctorPatients,
   type ListPatients,
+  type UpdatePatient,
 } from './patient.service.js';
 import type {
   CreatePatientInput,
   DoctorPatientParams,
   PatientIdParams,
   PatientListQuery,
+  UpdatePatientInput,
 } from './patient.validation.js';
 
 export const getPatientDetailsController = (
@@ -82,6 +85,24 @@ export const listPatientsController = (
       message: 'Patients retrieved successfully',
       data: result.patients,
       meta: result.meta,
+    });
+  };
+};
+
+export const updatePatientController = (
+  updatePatientOperation: UpdatePatient = updatePatient,
+): RequestHandler => {
+  return async (request, response) => {
+    const { id } = request.validated.params as PatientIdParams;
+    const patient = await updatePatientOperation(
+      id,
+      request.validated.body as UpdatePatientInput,
+    );
+
+    response.status(200).json({
+      success: true,
+      message: 'Patient updated successfully',
+      data: { patient },
     });
   };
 };

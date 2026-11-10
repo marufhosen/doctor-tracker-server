@@ -8,22 +8,26 @@ import {
   getPatientDetailsController,
   listDoctorPatientsController,
   listPatientsController,
+  updatePatientController,
 } from './patient.controller.js';
 import {
   createPatient,
   getPatientDetails,
   listDoctorPatients,
   listPatients,
+  updatePatient,
   type CreatePatient,
   type GetPatientDetails,
   type ListDoctorPatients,
   type ListPatients,
+  type UpdatePatient,
 } from './patient.service.js';
 import {
   createPatientRequestSchema,
   doctorPatientListRequestSchema,
   patientDetailsRequestSchema,
   patientListRequestSchema,
+  updatePatientRequestSchema,
 } from './patient.validation.js';
 
 export const createDoctorPatientRouter = (
@@ -55,6 +59,7 @@ export const createPatientRouter = (
   listPatientsOperation: ListPatients = listPatients,
   authenticationMiddleware: RequestHandler = authenticate,
   getPatientOperation: GetPatientDetails = getPatientDetails,
+  updatePatientOperation: UpdatePatient = updatePatient,
 ): Router => {
   const router = Router();
 
@@ -63,6 +68,12 @@ export const createPatientRouter = (
     '/',
     validateRequest(patientListRequestSchema),
     listPatientsController(listPatientsOperation),
+  );
+  router.patch(
+    '/:id',
+    requireAdmin,
+    validateRequest(updatePatientRequestSchema),
+    updatePatientController(updatePatientOperation),
   );
   router.get(
     '/:id',
