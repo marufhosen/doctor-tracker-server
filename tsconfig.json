@@ -13,6 +13,7 @@
     "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
+    "types": ["bun"],
     "skipLibCheck": true
   },
   "include": ["src/**/*.ts", "scripts/**/*.ts"],
