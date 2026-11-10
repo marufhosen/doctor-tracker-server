@@ -44,7 +44,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 - [x] Task 29 — Current user
 - [x] Task 30 — Logout
 - [x] Task 31 — Rate limiting
-- [ ] Task 32 — Admin bootstrap
+- [x] Task 32 — Admin bootstrap
 
 ## Phase 5 — Doctor management
 

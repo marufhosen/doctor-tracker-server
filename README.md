@@ -29,6 +29,14 @@ Run the server without file watching:
 bun run start
 ```
 
+Create the initial administrator from the validated `ADMIN_*` environment variables:
+
+```bash
+bun run seed:admin
+```
+
+The command is idempotent and will not replace or elevate an existing account.
+
 Check the TypeScript project:
 
 ```bash
