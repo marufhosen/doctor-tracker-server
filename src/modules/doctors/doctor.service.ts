@@ -1,4 +1,4 @@
-import { Types, type FilterQuery } from 'mongoose';
+import { Types, type QueryFilter } from 'mongoose';
 
 import {
   createPaginationMeta,
@@ -68,12 +68,12 @@ export const createDoctor = createDoctorService();
 
 interface DoctorListDependencies {
   find: (input: {
-    filter: FilterQuery<Doctor>;
+    filter: QueryFilter<Doctor>;
     skip: number;
     limit: number;
     sort: Record<string, 1 | -1>;
   }) => Promise<Array<Doctor & { _id: Types.ObjectId }>>;
-  count: (filter: FilterQuery<Doctor>) => Promise<number>;
+  count: (filter: QueryFilter<Doctor>) => Promise<number>;
 }
 
 const defaultListDependencies: DoctorListDependencies = {
@@ -84,7 +84,7 @@ const defaultListDependencies: DoctorListDependencies = {
 
 const createDoctorSearchFilter = (
   search: string | undefined,
-): FilterQuery<Doctor> => (search ? { $text: { $search: search } } : {});
+): QueryFilter<Doctor> => (search ? { $text: { $search: search } } : {});
 
 export interface DoctorListResult {
   doctors: DoctorOutput[];
