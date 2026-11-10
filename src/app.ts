@@ -5,6 +5,8 @@ import helmet from 'helmet';
 
 import { corsOptions } from './config/cors.js';
 import { env } from './config/env.js';
+import { errorHandler } from './middlewares/error-handler.js';
+import { notFound } from './middlewares/not-found.js';
 import { requestLogger } from './middlewares/request-logger.js';
 
 export const createApp = (): Express => {
@@ -28,6 +30,9 @@ export const createApp = (): Express => {
       data: { status: 'ok' },
     });
   });
+
+  app.use(notFound);
+  app.use(errorHandler);
 
   return app;
 };
