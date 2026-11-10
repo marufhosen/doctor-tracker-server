@@ -12,7 +12,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 - [x] Task 06 — Security middleware
 - [x] Task 07 — Logging
 - [x] Task 08 — Error handling
-- [ ] Task 09 — Validation middleware
+- [x] Task 09 — Validation middleware
 - [ ] Task 10 — Testing foundation
 
 ## Phase 2 — Mongoose entities
