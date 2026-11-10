@@ -8,6 +8,7 @@ import type { LoginService } from '../../modules/auth/auth.service.js';
 import type { RotateRefreshToken } from '../../modules/sessions/session.service.js';
 
 let app: Express;
+const csrfToken = 'a'.repeat(43);
 const loginService = mock(async () => {
   throw new Error('Login service should not be called');
 });
@@ -64,9 +65,9 @@ describe('POST /api/v1/auth/refresh', () => {
       .set('Origin', 'http://localhost:3000')
       .set(
         'Cookie',
-        'doctor_tracker_refresh=current-refresh-token; doctor_tracker_csrf=csrf-token',
+        `doctor_tracker_refresh=current-refresh-token; doctor_tracker_csrf=${csrfToken}`,
       )
-      .set('X-CSRF-Token', 'csrf-token');
+      .set('X-CSRF-Token', csrfToken);
 
     expect(response.status).toBe(200);
     expect(rotationService).toHaveBeenCalledWith('current-refresh-token');
@@ -80,8 +81,8 @@ describe('POST /api/v1/auth/refresh', () => {
     const response = await request(app)
       .post('/api/v1/auth/refresh')
       .set('Origin', 'http://localhost:3000')
-      .set('Cookie', 'doctor_tracker_csrf=csrf-token')
-      .set('X-CSRF-Token', 'csrf-token');
+      .set('Cookie', `doctor_tracker_csrf=${csrfToken}`)
+      .set('X-CSRF-Token', csrfToken);
 
     expect(response.status).toBe(401);
     expect(response.body.error.code).toBe('REFRESH_REQUIRED');

@@ -5,20 +5,23 @@ import { env } from '../config/env.js';
 import { USER_ROLES, type UserRole } from '../modules/users/user.types.js';
 
 const algorithm = 'HS256';
+const objectIdPattern = /^[a-f\d]{24}$/i;
 const signingKey = new TextEncoder().encode(env.JWT_ACCESS_SECRET);
 
-const accessTokenClaimsSchema = z.object({
-  sub: z.string().min(1),
-  sid: z.string().min(1),
-  role: z.enum(USER_ROLES),
-  iss: z.literal(env.JWT_ISSUER),
-  aud: z.union([
-    z.literal(env.JWT_AUDIENCE),
-    z.array(z.literal(env.JWT_AUDIENCE)).min(1),
-  ]),
-  iat: z.number().int(),
-  exp: z.number().int(),
-});
+const accessTokenClaimsSchema = z
+  .object({
+    sub: z.string().regex(objectIdPattern),
+    sid: z.string().regex(objectIdPattern),
+    role: z.enum(USER_ROLES),
+    iss: z.literal(env.JWT_ISSUER),
+    aud: z.union([
+      z.literal(env.JWT_AUDIENCE),
+      z.array(z.literal(env.JWT_AUDIENCE)).min(1),
+    ]),
+    iat: z.number().int(),
+    exp: z.number().int(),
+  })
+  .strict();
 
 export interface SignAccessTokenInput {
   userId: string;

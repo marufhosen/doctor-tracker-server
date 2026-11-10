@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'bun:test';
 import { SignJWT } from 'jose';
+import { Types } from 'mongoose';
 
 import type * as JwtUtilities from '../../utils/jwt.js';
 
@@ -9,6 +10,8 @@ let verifyAccessToken: typeof JwtUtilities.verifyAccessToken;
 const accessSecret = '01234567890123456789012345678901';
 const issuer = 'doctor-tracker';
 const audience = 'doctor-tracker-client';
+const userId = new Types.ObjectId().toString();
+const sessionId = new Types.ObjectId().toString();
 
 beforeAll(async () => {
   Object.assign(process.env, {
@@ -33,9 +36,9 @@ const createToken = async (
   tokenIssuer: string,
   expiration: string,
 ): Promise<string> => {
-  return new SignJWT({ sid: 'session-id', role: 'ADMIN' })
+  return new SignJWT({ sid: sessionId, role: 'ADMIN' })
     .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
-    .setSubject('user-id')
+    .setSubject(userId)
     .setIssuer(tokenIssuer)
     .setAudience(audience)
     .setIssuedAt()
@@ -46,15 +49,15 @@ const createToken = async (
 describe('JWT utilities', () => {
   it('signs and verifies all required access-token claims', async () => {
     const token = await signAccessToken({
-      userId: 'user-id',
-      sessionId: 'session-id',
+      userId,
+      sessionId,
       role: 'ADMIN',
     });
 
     const claims = await verifyAccessToken(token);
 
-    expect(claims.sub).toBe('user-id');
-    expect(claims.sid).toBe('session-id');
+    expect(claims.sub).toBe(userId);
+    expect(claims.sid).toBe(sessionId);
     expect(claims.role).toBe('ADMIN');
     expect(claims.iss).toBe(issuer);
     expect(claims.aud).toBe(audience);
@@ -79,6 +82,19 @@ describe('JWT utilities', () => {
 
   it('rejects tokens from a different issuer', async () => {
     const token = await createToken(accessSecret, 'other-issuer', '15m');
+
+    await expect(verifyAccessToken(token)).rejects.toThrow();
+  });
+
+  it('rejects identity claims that are not database identifiers', async () => {
+    const token = await new SignJWT({ sid: 'session-id', role: 'ADMIN' })
+      .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
+      .setSubject('user-id')
+      .setIssuer(issuer)
+      .setAudience(audience)
+      .setIssuedAt()
+      .setExpirationTime('15m')
+      .sign(new TextEncoder().encode(accessSecret));
 
     await expect(verifyAccessToken(token)).rejects.toThrow();
   });

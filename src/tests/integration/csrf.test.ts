@@ -53,19 +53,31 @@ describe('CSRF protection', () => {
   });
 
   it('requires matching double-submit tokens after login', async () => {
+    const csrfToken = 'a'.repeat(43);
     const validResponse = await request(app)
       .post('/api/v1/patients')
       .set('Origin', 'http://localhost:3000')
-      .set('Cookie', 'doctor_tracker_csrf=csrf-token')
-      .set('X-CSRF-Token', 'csrf-token');
+      .set('Cookie', `doctor_tracker_csrf=${csrfToken}`)
+      .set('X-CSRF-Token', csrfToken);
     const invalidResponse = await request(app)
       .post('/api/v1/patients')
       .set('Origin', 'http://localhost:3000')
-      .set('Cookie', 'doctor_tracker_csrf=csrf-token')
-      .set('X-CSRF-Token', 'different-token');
+      .set('Cookie', `doctor_tracker_csrf=${csrfToken}`)
+      .set('X-CSRF-Token', 'b'.repeat(43));
 
     expect(validResponse.status).toBe(204);
     expect(invalidResponse.status).toBe(403);
     expect(invalidResponse.body.error.code).toBe('CSRF_TOKEN_INVALID');
+  });
+
+  it('rejects matching tokens without the required entropy', async () => {
+    const response = await request(app)
+      .post('/api/v1/patients')
+      .set('Origin', 'http://localhost:3000')
+      .set('Cookie', 'doctor_tracker_csrf=predictable')
+      .set('X-CSRF-Token', 'predictable');
+
+    expect(response.status).toBe(403);
+    expect(response.body.error.code).toBe('CSRF_TOKEN_INVALID');
   });
 });

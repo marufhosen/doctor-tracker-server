@@ -9,6 +9,7 @@ import type { CreateDoctor } from '../../modules/doctors/doctor.service.js';
 
 let app: Express;
 const creatorId = new Types.ObjectId().toString();
+const csrfToken = 'a'.repeat(43);
 const createDoctor = mock(async (input, createdBy) => ({
   id: new Types.ObjectId().toString(),
   ...input,
@@ -58,8 +59,8 @@ describe('POST /api/v1/doctors', () => {
     const response = await request(app)
       .post('/api/v1/doctors')
       .set('Origin', 'http://localhost:3000')
-      .set('Cookie', 'doctor_tracker_csrf=csrf-token')
-      .set('X-CSRF-Token', 'csrf-token')
+      .set('Cookie', `doctor_tracker_csrf=${csrfToken}`)
+      .set('X-CSRF-Token', csrfToken)
       .send({
         name: 'Dr. Samira Khan',
         specialization: 'Cardiology',
@@ -80,8 +81,8 @@ describe('POST /api/v1/doctors', () => {
     const response = await request(app)
       .post('/api/v1/doctors')
       .set('Origin', 'http://localhost:3000')
-      .set('Cookie', 'doctor_tracker_csrf=csrf-token')
-      .set('X-CSRF-Token', 'csrf-token')
+      .set('Cookie', `doctor_tracker_csrf=${csrfToken}`)
+      .set('X-CSRF-Token', csrfToken)
       .send({ name: 'Doctor' });
 
     expect(response.status).toBe(400);

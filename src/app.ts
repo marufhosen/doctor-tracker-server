@@ -8,6 +8,7 @@ import { env } from './config/env.js';
 import { csrfProtection } from './middlewares/csrf.js';
 import { errorHandler } from './middlewares/error-handler.js';
 import { notFound } from './middlewares/not-found.js';
+import { noStore } from './middlewares/no-store.js';
 import { apiLimiter } from './middlewares/rate-limiter.js';
 import { requestLogger } from './middlewares/request-logger.js';
 import { authRouter } from './modules/auth/auth.routes.js';
@@ -24,6 +25,7 @@ export const createApp = (): Express => {
   app.disable('x-powered-by');
   app.set('trust proxy', env.TRUST_PROXY);
   app.use(requestLogger);
+  app.use(noStore);
   app.use(apiLimiter);
   app.use(helmet());
   app.use(cors(corsOptions));

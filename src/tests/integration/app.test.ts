@@ -38,6 +38,8 @@ describe('application smoke tests', () => {
       'http://localhost:3000',
     );
     expect(response.headers['x-content-type-options']).toBe('nosniff');
+    expect(response.headers['cache-control']).toBe('no-store');
+    expect(response.headers.pragma).toBe('no-cache');
     expect(response.headers['x-powered-by']).toBeUndefined();
   });
 

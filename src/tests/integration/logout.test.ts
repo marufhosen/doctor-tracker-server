@@ -5,6 +5,7 @@ import express, { type Express } from 'express';
 import request from 'supertest';
 
 let app: Express;
+const csrfToken = 'a'.repeat(43);
 const logoutService = mock(async () => undefined);
 
 beforeAll(async () => {
@@ -38,9 +39,9 @@ describe('POST /api/v1/auth/logout', () => {
       .set('Origin', 'http://localhost:3000')
       .set(
         'Cookie',
-        'doctor_tracker_refresh=refresh-token; doctor_tracker_csrf=csrf-token',
+        `doctor_tracker_refresh=refresh-token; doctor_tracker_csrf=${csrfToken}`,
       )
-      .set('X-CSRF-Token', 'csrf-token');
+      .set('X-CSRF-Token', csrfToken);
 
     expect(response.status).toBe(200);
     expect(logoutService).toHaveBeenCalledWith('refresh-token');
@@ -53,9 +54,9 @@ describe('POST /api/v1/auth/logout', () => {
       .set('Origin', 'http://localhost:3000')
       .set(
         'Cookie',
-        'doctor_tracker_refresh=refresh-token; doctor_tracker_csrf=csrf-token',
+        `doctor_tracker_refresh=refresh-token; doctor_tracker_csrf=${csrfToken}`,
       )
-      .set('X-CSRF-Token', 'csrf-token');
+      .set('X-CSRF-Token', csrfToken);
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe('Logout successful');

@@ -9,8 +9,13 @@ import { ApiError } from '../utils/api-error.js';
 const safeMethods = new Set(['GET', 'HEAD', 'OPTIONS']);
 const csrfExemptPaths = new Set(['/api/v1/auth/login']);
 const trustedOrigin = new URL(env.CORS_ORIGIN).origin;
+const csrfTokenPattern = /^[A-Za-z0-9_-]{43}$/;
 
 const tokensMatch = (first: string, second: string): boolean => {
+  if (!csrfTokenPattern.test(first) || !csrfTokenPattern.test(second)) {
+    return false;
+  }
+
   const firstBuffer = Buffer.from(first, 'utf8');
   const secondBuffer = Buffer.from(second, 'utf8');
 
