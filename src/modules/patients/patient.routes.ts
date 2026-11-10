@@ -5,6 +5,7 @@ import { requireAdmin } from '../../middlewares/require-role.js';
 import { validateRequest } from '../../middlewares/validate-request.js';
 import {
   createPatientController,
+  deletePatientController,
   getPatientDetailsController,
   listDoctorPatientsController,
   listPatientsController,
@@ -12,11 +13,13 @@ import {
 } from './patient.controller.js';
 import {
   createPatient,
+  deletePatient,
   getPatientDetails,
   listDoctorPatients,
   listPatients,
   updatePatient,
   type CreatePatient,
+  type DeletePatient,
   type GetPatientDetails,
   type ListDoctorPatients,
   type ListPatients,
@@ -60,6 +63,7 @@ export const createPatientRouter = (
   authenticationMiddleware: RequestHandler = authenticate,
   getPatientOperation: GetPatientDetails = getPatientDetails,
   updatePatientOperation: UpdatePatient = updatePatient,
+  deletePatientOperation: DeletePatient = deletePatient,
 ): Router => {
   const router = Router();
 
@@ -74,6 +78,12 @@ export const createPatientRouter = (
     requireAdmin,
     validateRequest(updatePatientRequestSchema),
     updatePatientController(updatePatientOperation),
+  );
+  router.delete(
+    '/:id',
+    requireAdmin,
+    validateRequest(patientDetailsRequestSchema),
+    deletePatientController(deletePatientOperation),
   );
   router.get(
     '/:id',

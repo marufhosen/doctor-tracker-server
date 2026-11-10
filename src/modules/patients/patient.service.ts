@@ -294,3 +294,32 @@ export const createUpdatePatientService = (
 };
 
 export const updatePatient = createUpdatePatientService();
+
+interface DeletePatientDependencies {
+  deleteById: (
+    patientId: Types.ObjectId,
+  ) => Promise<(Patient & { _id: Types.ObjectId }) | null>;
+}
+
+const defaultDeletePatientDependencies: DeletePatientDependencies = {
+  deleteById: async (patientId) =>
+    PatientModel.findByIdAndDelete(patientId).lean().exec(),
+};
+
+export type DeletePatient = (patientId: string) => Promise<void>;
+
+export const createDeletePatientService = (
+  dependencies: DeletePatientDependencies = defaultDeletePatientDependencies,
+): DeletePatient => {
+  return async (patientId) => {
+    const patient = await dependencies.deleteById(
+      new Types.ObjectId(patientId),
+    );
+
+    if (!patient) {
+      throw new ApiError(404, 'Patient not found', 'PATIENT_NOT_FOUND');
+    }
+  };
+};
+
+export const deletePatient = createDeletePatientService();

@@ -2,11 +2,13 @@ import type { RequestHandler } from 'express';
 
 import {
   createPatient,
+  deletePatient,
   getPatientDetails,
   listDoctorPatients,
   listPatients,
   updatePatient,
   type CreatePatient,
+  type DeletePatient,
   type GetPatientDetails,
   type ListDoctorPatients,
   type ListPatients,
@@ -103,6 +105,21 @@ export const updatePatientController = (
       success: true,
       message: 'Patient updated successfully',
       data: { patient },
+    });
+  };
+};
+
+export const deletePatientController = (
+  deletePatientOperation: DeletePatient = deletePatient,
+): RequestHandler => {
+  return async (request, response) => {
+    const { id } = request.validated.params as PatientIdParams;
+    await deletePatientOperation(id);
+
+    response.status(200).json({
+      success: true,
+      message: 'Patient deleted successfully',
+      data: null,
     });
   };
 };
