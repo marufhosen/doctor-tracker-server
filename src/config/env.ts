@@ -14,6 +14,9 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
     .default('development'),
+  LOG_LEVEL: z
+    .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
+    .default('info'),
   PORT: z.coerce.number().int().min(1).max(65_535).default(5000),
   TRUST_PROXY: z.coerce.number().int().min(0).max(10).default(0),
   REQUEST_BODY_LIMIT: z

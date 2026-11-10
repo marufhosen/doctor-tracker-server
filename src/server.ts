@@ -3,6 +3,7 @@ import type { Server } from 'node:http';
 import { app } from './app.js';
 import { connectDatabase, disconnectDatabase } from './config/database.js';
 import { env } from './config/env.js';
+import { logger } from './config/logger.js';
 
 const closeHttpServer = async (server: Server): Promise<void> => {
   await new Promise<void>((resolve, reject) => {
@@ -26,13 +27,13 @@ const registerShutdownHandlers = (server: Server): void => {
     }
 
     isShuttingDown = true;
-    console.info(`${signal} received; shutting down`);
+    logger.info({ signal }, 'Shutdown signal received');
 
     try {
       await closeHttpServer(server);
       await disconnectDatabase();
     } catch (error) {
-      console.error('Graceful shutdown failed', error);
+      logger.error({ err: error }, 'Graceful shutdown failed');
       process.exitCode = 1;
     }
   };
@@ -46,12 +47,12 @@ const startServer = async (): Promise<void> => {
     await connectDatabase();
 
     const server = app.listen(env.PORT, () => {
-      console.info(`Server listening on port ${env.PORT}`);
+      logger.info({ port: env.PORT }, 'Server listening');
     });
 
     registerShutdownHandlers(server);
   } catch (error) {
-    console.error('Server startup failed', error);
+    logger.fatal({ err: error }, 'Server startup failed');
     process.exitCode = 1;
   }
 };
