@@ -10,6 +10,7 @@ import {
   rotateRefreshToken,
   type RotateRefreshToken,
 } from '../sessions/session.service.js';
+import { getCurrentUser, type GetCurrentUser } from '../users/user.service.js';
 import { login, type LoginService } from './auth.service.js';
 import type { LoginInput } from './auth.validation.js';
 
@@ -60,5 +61,22 @@ export const createRefreshController = (
       clearAuthCookies(response);
       throw error;
     }
+  };
+};
+
+export const createCurrentUserController = (
+  currentUserService: GetCurrentUser = getCurrentUser,
+): RequestHandler => {
+  return async (request, response) => {
+    if (!request.auth) {
+      throw new ApiError(401, 'Authentication required', 'UNAUTHENTICATED');
+    }
+
+    const user = await currentUserService(request.auth.userId);
+    response.status(200).json({
+      success: true,
+      message: 'Current user retrieved successfully',
+      data: { user },
+    });
   };
 };

@@ -1,7 +1,9 @@
 import { Router } from 'express';
 
+import { authenticate } from '../../middlewares/authenticate.js';
 import { validateRequest } from '../../middlewares/validate-request.js';
 import {
+  createCurrentUserController,
   createLoginController,
   createRefreshController,
 } from './auth.controller.js';
@@ -24,6 +26,7 @@ export const createAuthRouter = (
     createLoginController(loginService),
   );
   router.post('/refresh', createRefreshController(rotationService));
+  router.get('/me', authenticate, createCurrentUserController());
 
   return router;
 };

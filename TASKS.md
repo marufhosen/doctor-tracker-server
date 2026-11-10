@@ -41,7 +41,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 - [x] Task 26 — Replay detection
 - [x] Task 27 — Authentication middleware
 - [x] Task 28 — Role middleware
-- [ ] Task 29 — Current user
+- [x] Task 29 — Current user
 - [ ] Task 30 — Logout
 - [ ] Task 31 — Rate limiting
 - [ ] Task 32 — Admin bootstrap
