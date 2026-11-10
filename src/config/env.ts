@@ -46,7 +46,12 @@ const envSchema = z.object({
   ADMIN_PASSWORD: z.string().min(12),
 });
 
-const parsedEnv = envSchema.safeParse(process.env);
+const rawEnv = {
+  ...process.env,
+  MONGODB_URI: process.env.MONGODB_URI ?? process.env.DATABASE_URL,
+};
+
+const parsedEnv = envSchema.safeParse(rawEnv);
 
 if (!parsedEnv.success) {
   const invalidVariables = parsedEnv.error.issues
