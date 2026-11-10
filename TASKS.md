@@ -17,7 +17,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 
 ## Phase 2 — Mongoose entities
 
-- [ ] Task 11 — User model
+- [x] Task 11 — User model
 - [ ] Task 12 — Doctor model
 - [ ] Task 13 — Patient model
 - [ ] Task 14 — Session model
