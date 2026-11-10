@@ -37,7 +37,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 - [x] Task 22 — Login endpoint
 - [x] Task 23 — Remember Me
 - [x] Task 24 — Token rotation service
-- [ ] Task 25 — Refresh endpoint
+- [x] Task 25 — Refresh endpoint
 - [ ] Task 26 — Replay detection
 - [ ] Task 27 — Authentication middleware
 - [ ] Task 28 — Role middleware
