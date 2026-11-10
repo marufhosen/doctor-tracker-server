@@ -223,3 +223,31 @@ export const createListPatientsService = (
 };
 
 export const listPatients = createListPatientsService();
+
+interface PatientDetailsDependencies {
+  findById: (
+    patientId: Types.ObjectId,
+  ) => Promise<(Patient & { _id: Types.ObjectId }) | null>;
+}
+
+const defaultPatientDetailsDependencies: PatientDetailsDependencies = {
+  findById: async (patientId) => PatientModel.findById(patientId).lean().exec(),
+};
+
+export type GetPatientDetails = (patientId: string) => Promise<PatientOutput>;
+
+export const createGetPatientDetailsService = (
+  dependencies: PatientDetailsDependencies = defaultPatientDetailsDependencies,
+): GetPatientDetails => {
+  return async (patientId) => {
+    const patient = await dependencies.findById(new Types.ObjectId(patientId));
+
+    if (!patient) {
+      throw new ApiError(404, 'Patient not found', 'PATIENT_NOT_FOUND');
+    }
+
+    return toPatientOutput(patient);
+  };
+};
+
+export const getPatientDetails = createGetPatientDetailsService();

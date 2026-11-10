@@ -2,17 +2,35 @@ import type { RequestHandler } from 'express';
 
 import {
   createPatient,
+  getPatientDetails,
   listDoctorPatients,
   listPatients,
   type CreatePatient,
+  type GetPatientDetails,
   type ListDoctorPatients,
   type ListPatients,
 } from './patient.service.js';
 import type {
   CreatePatientInput,
   DoctorPatientParams,
+  PatientIdParams,
   PatientListQuery,
 } from './patient.validation.js';
+
+export const getPatientDetailsController = (
+  getPatientOperation: GetPatientDetails = getPatientDetails,
+): RequestHandler => {
+  return async (request, response) => {
+    const { id } = request.validated.params as PatientIdParams;
+    const patient = await getPatientOperation(id);
+
+    response.status(200).json({
+      success: true,
+      message: 'Patient retrieved successfully',
+      data: { patient },
+    });
+  };
+};
 
 export const createPatientController = (
   createPatientOperation: CreatePatient = createPatient,
