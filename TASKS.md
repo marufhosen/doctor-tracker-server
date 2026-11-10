@@ -58,7 +58,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 ## Phase 6 — Patient management
 
 - [x] Task 39 — Patient validation
-- [ ] Task 40 — Create patient
+- [x] Task 40 — Create patient
 - [ ] Task 41 — Doctor patient listing
 - [ ] Task 42 — Patient listing
 - [ ] Task 43 — Patient search
