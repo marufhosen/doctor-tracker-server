@@ -62,7 +62,12 @@ patientSchema.index(
   { name: 'patient_search', weights: { name: 10, email: 3, phone: 2 } },
 );
 patientSchema.index({ createdAt: -1, _id: -1 });
-patientSchema.index({ doctorId: 1, createdAt: -1, _id: -1 });
+patientSchema.index({
+  doctorId: 1,
+  condition: 1,
+  createdAt: -1,
+  _id: -1,
+});
 patientSchema.index({ condition: 1, createdAt: -1, _id: -1 });
 
 export const PatientModel: Model<Patient> =

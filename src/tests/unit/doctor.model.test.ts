@@ -45,7 +45,7 @@ describe('DoctorModel', () => {
     });
   });
 
-  it('defines search and stable sorting indexes without a unique email', () => {
+  it('defines optimized search and filtered sorting indexes', () => {
     const indexes = DoctorModel.schema.indexes();
     const searchIndex = indexes.find(
       ([, options]) => options.name === 'doctor_search',
@@ -56,9 +56,25 @@ describe('DoctorModel', () => {
     const emailOnlyIndex = indexes.find(
       ([fields]) => Object.keys(fields).length === 1 && fields.email === 1,
     );
+    const filteredSortIndex = indexes.find(
+      ([fields]) =>
+        fields.specialization === 1 &&
+        fields.hospital === 1 &&
+        fields.createdAt === -1 &&
+        fields._id === -1,
+    );
+    const redundantSpecializationIndex = indexes.find(
+      ([fields]) =>
+        Object.keys(fields).length === 3 &&
+        fields.specialization === 1 &&
+        fields.createdAt === -1 &&
+        fields._id === -1,
+    );
 
     expect(searchIndex).toBeDefined();
     expect(stableSortIndex).toBeDefined();
+    expect(filteredSortIndex).toBeDefined();
+    expect(redundantSpecializationIndex).toBeUndefined();
     expect(emailOnlyIndex?.[1].unique).not.toBe(true);
   });
 });

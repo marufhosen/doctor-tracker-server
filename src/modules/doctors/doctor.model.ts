@@ -54,7 +54,12 @@ doctorSchema.index(
   },
 );
 doctorSchema.index({ createdAt: -1, _id: -1 });
-doctorSchema.index({ specialization: 1, createdAt: -1, _id: -1 });
+doctorSchema.index({
+  specialization: 1,
+  hospital: 1,
+  createdAt: -1,
+  _id: -1,
+});
 doctorSchema.index({ hospital: 1, createdAt: -1, _id: -1 });
 
 export const DoctorModel: Model<Doctor> =

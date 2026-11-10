@@ -50,7 +50,7 @@ describe('PatientModel', () => {
     });
   });
 
-  it('defines indexes for search, ownership, condition, and stable sorting', () => {
+  it('defines optimized indexes for search, ownership, and filtering', () => {
     const indexes = PatientModel.schema.indexes();
 
     expect(
@@ -62,6 +62,24 @@ describe('PatientModel', () => {
           fields.doctorId === 1 && fields.createdAt === -1 && fields._id === -1,
       ),
     ).toBe(true);
+    expect(
+      indexes.some(
+        ([fields]) =>
+          fields.doctorId === 1 &&
+          fields.condition === 1 &&
+          fields.createdAt === -1 &&
+          fields._id === -1,
+      ),
+    ).toBe(true);
+    expect(
+      indexes.some(
+        ([fields]) =>
+          Object.keys(fields).length === 3 &&
+          fields.doctorId === 1 &&
+          fields.createdAt === -1 &&
+          fields._id === -1,
+      ),
+    ).toBe(false);
     expect(
       indexes.some(
         ([fields]) =>
