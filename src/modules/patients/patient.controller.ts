@@ -3,8 +3,10 @@ import type { RequestHandler } from 'express';
 import {
   createPatient,
   listDoctorPatients,
+  listPatients,
   type CreatePatient,
   type ListDoctorPatients,
+  type ListPatients,
 } from './patient.service.js';
 import type {
   CreatePatientInput,
@@ -43,6 +45,23 @@ export const listDoctorPatientsController = (
     response.status(200).json({
       success: true,
       message: 'Doctor patients retrieved successfully',
+      data: result.patients,
+      meta: result.meta,
+    });
+  };
+};
+
+export const listPatientsController = (
+  listPatientsOperation: ListPatients = listPatients,
+): RequestHandler => {
+  return async (request, response) => {
+    const result = await listPatientsOperation(
+      request.validated.query as PatientListQuery,
+    );
+
+    response.status(200).json({
+      success: true,
+      message: 'Patients retrieved successfully',
       data: result.patients,
       meta: result.meta,
     });

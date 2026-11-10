@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { Types, type QueryFilter } from 'mongoose';
 
 import { ApiError } from '../../utils/api-error.js';
 import {
@@ -156,3 +156,48 @@ export const createListDoctorPatientsService = (
 };
 
 export const listDoctorPatients = createListDoctorPatientsService();
+
+interface PatientListDependencies {
+  find: (input: {
+    filter: QueryFilter<Patient>;
+    skip: number;
+    limit: number;
+    sort: Record<string, 1 | -1>;
+  }) => Promise<Array<Patient & { _id: Types.ObjectId }>>;
+  count: (filter: QueryFilter<Patient>) => Promise<number>;
+}
+
+const defaultPatientListDependencies: PatientListDependencies = {
+  find: async ({ filter, skip, limit, sort }) =>
+    PatientModel.find(filter).sort(sort).skip(skip).limit(limit).lean().exec(),
+  count: async (filter) => PatientModel.countDocuments(filter).exec(),
+};
+
+export type ListPatients = (
+  query: PatientListQuery,
+) => Promise<PatientListResult>;
+
+export const createListPatientsService = (
+  dependencies: PatientListDependencies = defaultPatientListDependencies,
+): ListPatients => {
+  return async (query) => {
+    const direction = query.sortOrder === 'asc' ? 1 : -1;
+    const sort = { [query.sortBy]: direction, _id: direction } as Record<
+      string,
+      1 | -1
+    >;
+    const skip = (query.page - 1) * query.limit;
+    const filter: QueryFilter<Patient> = {};
+    const [patients, total] = await Promise.all([
+      dependencies.find({ filter, skip, limit: query.limit, sort }),
+      dependencies.count(filter),
+    ]);
+
+    return {
+      patients: patients.map(toPatientOutput),
+      meta: createPaginationMeta(query.page, query.limit, total),
+    };
+  };
+};
+
+export const listPatients = createListPatientsService();
