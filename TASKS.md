@@ -72,7 +72,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 
 - [x] Task 49 — Dashboard summary
 - [x] Task 50 — Patients per doctor
-- [ ] Task 51 — Date-based analytics
+- [x] Task 51 — Date-based analytics
 
 ## Phase 8 — Optimization and delivery
 

@@ -2,6 +2,7 @@ import type { PipelineStage, Types } from 'mongoose';
 
 import { DoctorModel } from '../doctors/doctor.model.js';
 import { PatientModel } from '../patients/patient.model.js';
+import type { DashboardTrendsQuery } from './dashboard.validation.js';
 
 export interface DashboardSummary {
   totalDoctors: number;
@@ -92,3 +93,91 @@ export const createGetDoctorPatientAnalyticsService = (
 
 export const getDoctorPatientAnalytics =
   createGetDoctorPatientAnalyticsService();
+
+interface DateTrendRecord {
+  _id: string;
+  count: number;
+}
+
+export interface DateTrendPoint {
+  date: string;
+  count: number;
+}
+
+export interface DashboardTrends {
+  doctors: DateTrendPoint[];
+  patients: DateTrendPoint[];
+}
+
+interface DashboardTrendsDependencies {
+  aggregateDoctors: (pipeline: PipelineStage[]) => Promise<DateTrendRecord[]>;
+  aggregatePatients: (pipeline: PipelineStage[]) => Promise<DateTrendRecord[]>;
+}
+
+const defaultDashboardTrendsDependencies: DashboardTrendsDependencies = {
+  aggregateDoctors: async (pipeline) => DoctorModel.aggregate(pipeline).exec(),
+  aggregatePatients: async (pipeline) =>
+    PatientModel.aggregate(pipeline).exec(),
+};
+
+const createDateTrendPipeline = (
+  query: DashboardTrendsQuery,
+): PipelineStage[] => {
+  const pipeline: PipelineStage[] = [];
+
+  if (query.from || query.to) {
+    pipeline.push({
+      $match: {
+        createdAt: {
+          ...(query.from ? { $gte: query.from } : {}),
+          ...(query.to ? { $lte: query.to } : {}),
+        },
+      },
+    });
+  }
+
+  pipeline.push(
+    {
+      $group: {
+        _id: {
+          $dateToString: {
+            date: '$createdAt',
+            format: '%Y-%m-%d',
+            timezone: 'UTC',
+          },
+        },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { _id: 1 } },
+  );
+
+  return pipeline;
+};
+
+export type GetDashboardTrends = (
+  query: DashboardTrendsQuery,
+) => Promise<DashboardTrends>;
+
+export const createGetDashboardTrendsService = (
+  dependencies: DashboardTrendsDependencies = defaultDashboardTrendsDependencies,
+): GetDashboardTrends => {
+  return async (query) => {
+    const pipeline = createDateTrendPipeline(query);
+    const [doctorRecords, patientRecords] = await Promise.all([
+      dependencies.aggregateDoctors(pipeline),
+      dependencies.aggregatePatients(pipeline),
+    ]);
+    const mapRecord = (record: DateTrendRecord): DateTrendPoint => ({
+      date: record._id,
+      count: record.count,
+    });
+
+    return {
+      doctors: doctorRecords.map(mapRecord),
+      patients: patientRecords.map(mapRecord),
+    };
+  };
+};
+
+export const getDashboardTrends = createGetDashboardTrendsService();

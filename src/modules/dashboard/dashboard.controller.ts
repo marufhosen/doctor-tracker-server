@@ -3,9 +3,12 @@ import type { RequestHandler } from 'express';
 import {
   getDashboardSummary,
   getDoctorPatientAnalytics,
+  getDashboardTrends,
   type GetDashboardSummary,
   type GetDoctorPatientAnalytics,
+  type GetDashboardTrends,
 } from './dashboard.service.js';
+import type { DashboardTrendsQuery } from './dashboard.validation.js';
 
 export const dashboardSummaryController = (
   getSummaryOperation: GetDashboardSummary = getDashboardSummary,
@@ -31,6 +34,22 @@ export const doctorPatientAnalyticsController = (
       success: true,
       message: 'Doctor patient analytics retrieved successfully',
       data: { doctors },
+    });
+  };
+};
+
+export const dashboardTrendsController = (
+  getTrendsOperation: GetDashboardTrends = getDashboardTrends,
+): RequestHandler => {
+  return async (request, response) => {
+    const trends = await getTrendsOperation(
+      request.validated.query as DashboardTrendsQuery,
+    );
+
+    response.status(200).json({
+      success: true,
+      message: 'Dashboard trends retrieved successfully',
+      data: { trends },
     });
   };
 };
