@@ -15,6 +15,11 @@ const envSchema = z.object({
     .enum(['development', 'test', 'production'])
     .default('development'),
   PORT: z.coerce.number().int().min(1).max(65_535).default(5000),
+  TRUST_PROXY: z.coerce.number().int().min(0).max(10).default(0),
+  REQUEST_BODY_LIMIT: z
+    .string()
+    .regex(/^\d+(b|kb|mb)$/i)
+    .default('100kb'),
   MONGODB_URI: z
     .string()
     .trim()

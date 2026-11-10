@@ -9,7 +9,7 @@ Tasks are completed sequentially. Each task is implemented, verified, and commit
 - [x] Task 03 — Environment configuration
 - [x] Task 04 — MongoDB connection
 - [x] Task 05 — Express bootstrap
-- [ ] Task 06 — Security middleware
+- [x] Task 06 — Security middleware
 - [ ] Task 07 — Logging
 - [ ] Task 08 — Error handling
 - [ ] Task 09 — Validation middleware
