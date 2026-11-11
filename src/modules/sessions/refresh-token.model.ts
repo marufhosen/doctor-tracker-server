@@ -1,6 +1,8 @@
-import { model, models, Schema, type Model } from 'mongoose';
+import mongoose, { type Model } from 'mongoose';
 
 import type { RefreshTokenHistory } from './refresh-token.types.js';
+
+const { model, models, Schema } = mongoose;
 
 const refreshTokenHistorySchema = new Schema<RefreshTokenHistory>(
   {

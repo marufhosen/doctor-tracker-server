@@ -1,6 +1,8 @@
-import { model, models, Schema, type Model } from 'mongoose';
+import mongoose, { type Model } from 'mongoose';
 
 import type { Session } from './session.types.js';
+
+const { model, models, Schema } = mongoose;
 
 const sessionSchema = new Schema<Session>(
   {

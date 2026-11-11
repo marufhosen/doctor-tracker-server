@@ -1,6 +1,8 @@
-import { model, models, Schema, type Model } from 'mongoose';
+import mongoose, { type Model } from 'mongoose';
 
 import { USER_ROLES, type User } from './user.types.js';
+
+const { model, models, Schema } = mongoose;
 
 const userSchema = new Schema<User>(
   {

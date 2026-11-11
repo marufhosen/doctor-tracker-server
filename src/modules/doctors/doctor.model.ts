@@ -1,6 +1,8 @@
-import { model, models, Schema, type Model } from 'mongoose';
+import mongoose, { type Model } from 'mongoose';
 
 import type { Doctor } from './doctor.types.js';
+
+const { model, models, Schema } = mongoose;
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phonePattern = /^\+?[0-9][0-9 ()-]{6,19}$/;

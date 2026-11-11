@@ -1,4 +1,7 @@
-import { Types, type QueryFilter } from 'mongoose';
+import mongoose, {
+  type QueryFilter,
+  type Types as MongooseTypes,
+} from 'mongoose';
 
 import { ApiError } from '../../utils/api-error.js';
 import {
@@ -13,6 +16,8 @@ import type {
   PatientListQuery,
   UpdatePatientInput,
 } from './patient.validation.js';
+
+const { Types } = mongoose;
 
 export interface PatientOutput {
   id: string;
@@ -29,7 +34,7 @@ export interface PatientOutput {
 }
 
 const toPatientOutput = (
-  patient: Patient & { _id: Types.ObjectId },
+  patient: Patient & { _id: MongooseTypes.ObjectId },
 ): PatientOutput => ({
   id: patient._id.toString(),
   doctorId: patient.doctorId.toString(),
@@ -45,10 +50,10 @@ const toPatientOutput = (
 });
 
 interface CreatePatientDependencies {
-  doctorExists: (doctorId: Types.ObjectId) => Promise<boolean>;
+  doctorExists: (doctorId: MongooseTypes.ObjectId) => Promise<boolean>;
   create: (
-    input: CreatePatientInput & { doctorId: Types.ObjectId },
-  ) => Promise<Patient & { _id: Types.ObjectId }>;
+    input: CreatePatientInput & { doctorId: MongooseTypes.ObjectId },
+  ) => Promise<Patient & { _id: MongooseTypes.ObjectId }>;
 }
 
 const defaultCreateDependencies: CreatePatientDependencies = {
@@ -91,13 +96,13 @@ export const createPatientService = (
 export const createPatient = createPatientService();
 
 interface DoctorPatientListDependencies {
-  doctorExists: (doctorId: Types.ObjectId) => Promise<boolean>;
+  doctorExists: (doctorId: MongooseTypes.ObjectId) => Promise<boolean>;
   find: (input: {
     filter: QueryFilter<Patient>;
     skip: number;
     limit: number;
     sort: Record<string, 1 | -1>;
-  }) => Promise<Array<Patient & { _id: Types.ObjectId }>>;
+  }) => Promise<Array<Patient & { _id: MongooseTypes.ObjectId }>>;
   count: (filter: QueryFilter<Patient>) => Promise<number>;
 }
 
@@ -110,7 +115,7 @@ const defaultDoctorPatientListDependencies: DoctorPatientListDependencies = {
 
 const createPatientFilter = (
   query: Omit<PatientListQuery, 'doctorId'>,
-  doctorId?: Types.ObjectId,
+  doctorId?: MongooseTypes.ObjectId,
 ): QueryFilter<Patient> => {
   const filter: QueryFilter<Patient> = {
     ...(doctorId ? { doctorId } : {}),
@@ -183,7 +188,7 @@ interface PatientListDependencies {
     skip: number;
     limit: number;
     sort: Record<string, 1 | -1>;
-  }) => Promise<Array<Patient & { _id: Types.ObjectId }>>;
+  }) => Promise<Array<Patient & { _id: MongooseTypes.ObjectId }>>;
   count: (filter: QueryFilter<Patient>) => Promise<number>;
 }
 
@@ -227,8 +232,8 @@ export const listPatients = createListPatientsService();
 
 interface PatientDetailsDependencies {
   findById: (
-    patientId: Types.ObjectId,
-  ) => Promise<(Patient & { _id: Types.ObjectId }) | null>;
+    patientId: MongooseTypes.ObjectId,
+  ) => Promise<(Patient & { _id: MongooseTypes.ObjectId }) | null>;
 }
 
 const defaultPatientDetailsDependencies: PatientDetailsDependencies = {
@@ -255,9 +260,9 @@ export const getPatientDetails = createGetPatientDetailsService();
 
 interface UpdatePatientDependencies {
   updateById: (
-    patientId: Types.ObjectId,
+    patientId: MongooseTypes.ObjectId,
     input: UpdatePatientInput,
-  ) => Promise<(Patient & { _id: Types.ObjectId }) | null>;
+  ) => Promise<(Patient & { _id: MongooseTypes.ObjectId }) | null>;
 }
 
 const defaultUpdatePatientDependencies: UpdatePatientDependencies = {
@@ -297,8 +302,8 @@ export const updatePatient = createUpdatePatientService();
 
 interface DeletePatientDependencies {
   deleteById: (
-    patientId: Types.ObjectId,
-  ) => Promise<(Patient & { _id: Types.ObjectId }) | null>;
+    patientId: MongooseTypes.ObjectId,
+  ) => Promise<(Patient & { _id: MongooseTypes.ObjectId }) | null>;
 }
 
 const defaultDeletePatientDependencies: DeletePatientDependencies = {
@@ -325,10 +330,10 @@ export const createDeletePatientService = (
 export const deletePatient = createDeletePatientService();
 
 interface DeleteDoctorPatientDependencies {
-  doctorExists: (doctorId: Types.ObjectId) => Promise<boolean>;
+  doctorExists: (doctorId: MongooseTypes.ObjectId) => Promise<boolean>;
   deleteOne: (
     filter: QueryFilter<Patient>,
-  ) => Promise<(Patient & { _id: Types.ObjectId }) | null>;
+  ) => Promise<(Patient & { _id: MongooseTypes.ObjectId }) | null>;
 }
 
 const defaultDeleteDoctorPatientDependencies: DeleteDoctorPatientDependencies =

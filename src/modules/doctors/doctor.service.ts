@@ -1,4 +1,7 @@
-import { Types, type QueryFilter } from 'mongoose';
+import mongoose, {
+  type QueryFilter,
+  type Types as MongooseTypes,
+} from 'mongoose';
 
 import {
   createPaginationMeta,
@@ -11,6 +14,8 @@ import type {
   CreateDoctorInput,
   DoctorListQuery,
 } from './doctor.validation.js';
+
+const { Types } = mongoose;
 
 export interface DoctorOutput {
   id: string;
@@ -25,7 +30,7 @@ export interface DoctorOutput {
 }
 
 const toDoctorOutput = (
-  doctor: Doctor & { _id: Types.ObjectId },
+  doctor: Doctor & { _id: MongooseTypes.ObjectId },
 ): DoctorOutput => ({
   id: doctor._id.toString(),
   name: doctor.name,
@@ -40,8 +45,8 @@ const toDoctorOutput = (
 
 interface CreateDoctorDependencies {
   create: (
-    input: CreateDoctorInput & { createdBy: Types.ObjectId },
-  ) => Promise<Doctor & { _id: Types.ObjectId }>;
+    input: CreateDoctorInput & { createdBy: MongooseTypes.ObjectId },
+  ) => Promise<Doctor & { _id: MongooseTypes.ObjectId }>;
 }
 
 const defaultCreateDependencies: CreateDoctorDependencies = {
@@ -73,7 +78,7 @@ interface DoctorListDependencies {
     skip: number;
     limit: number;
     sort: Record<string, 1 | -1>;
-  }) => Promise<Array<Doctor & { _id: Types.ObjectId }>>;
+  }) => Promise<Array<Doctor & { _id: MongooseTypes.ObjectId }>>;
   count: (filter: QueryFilter<Doctor>) => Promise<number>;
 }
 
@@ -139,7 +144,9 @@ export const createListDoctorsService = (
 export const listDoctors = createListDoctorsService();
 
 interface DoctorDetailsDependencies {
-  findById: (id: string) => Promise<(Doctor & { _id: Types.ObjectId }) | null>;
+  findById: (
+    id: string,
+  ) => Promise<(Doctor & { _id: MongooseTypes.ObjectId }) | null>;
 }
 
 const defaultDetailsDependencies: DoctorDetailsDependencies = {
