@@ -1,9 +1,17 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express, { type Express, type Request, type Response } from 'express';
-import helmet from 'helmet';
+import express, {
+  type Express,
+  type NextFunction,
+  type Request,
+  type RequestHandler,
+  type Response,
+} from 'express';
+import * as helmetModule from 'helmet';
+import type { HelmetOptions } from 'helmet';
 
 import { corsOptions } from './config/cors.js';
+import { connectDatabase } from './config/database.js';
 import { env } from './config/env.js';
 import { csrfProtection } from './middlewares/csrf.js';
 import { errorHandler } from './middlewares/error-handler.js';
@@ -18,6 +26,23 @@ import {
   doctorPatientRouter,
   patientRouter,
 } from './modules/patients/patient.routes.js';
+
+const helmet = (
+  'default' in helmetModule ? helmetModule.default : helmetModule
+) as (options?: Readonly<HelmetOptions>) => RequestHandler;
+
+const connectDatabaseForVercel = async (
+  _request: Request,
+  _response: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    await connectDatabase();
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const createApp = (): Express => {
   const app = express();
@@ -44,6 +69,10 @@ export const createApp = (): Express => {
     });
   });
 
+  if (process.env.VERCEL === '1') {
+    app.use(connectDatabaseForVercel);
+  }
+
   app.use('/api/v1/auth', authRouter);
   app.use('/api/v1/dashboard', dashboardRouter);
   app.use('/api/v1/doctors', doctorPatientRouter);
@@ -57,3 +86,4 @@ export const createApp = (): Express => {
 };
 
 export const app = createApp();
+export default app;
