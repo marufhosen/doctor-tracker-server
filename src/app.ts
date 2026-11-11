@@ -27,9 +27,11 @@ import {
   patientRouter,
 } from './modules/patients/patient.routes.js';
 
-const helmet = (
-  'default' in helmetModule ? helmetModule.default : helmetModule
-) as (options?: Readonly<HelmetOptions>) => RequestHandler;
+const helmet = ('default' in helmetModule
+  ? helmetModule.default
+  : helmetModule) as unknown as (
+  options?: Readonly<HelmetOptions>,
+) => RequestHandler;
 
 const connectDatabaseForVercel = async (
   _request: Request,
