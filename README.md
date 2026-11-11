@@ -35,9 +35,11 @@ Replace every placeholder in `.env`, then create the initial administrator:
 
 ```bash
 bun run seed:admin
+bun run seed:data
 ```
 
-The seed command is idempotent. It will not replace, modify, or elevate an existing account with the configured email.
+Both seed commands are idempotent. The data seed adds 12 doctors and 48 patients without
+duplicating or modifying records created by an earlier run.
 
 Start development with file watching:
 
@@ -141,6 +143,7 @@ Structured logs redact passwords, cookies, authorization headers, CSRF headers, 
 | `bun run dev`          | Start with file watching                         |
 | `bun run start`        | Start the server                                 |
 | `bun run seed:admin`   | Idempotently create the configured administrator |
+| `bun run seed:data`    | Idempotently create sample doctors and patients  |
 | `bun run typecheck`    | Run strict TypeScript checks                     |
 | `bun run lint`         | Run ESLint                                       |
 | `bun run lint:fix`     | Apply safe ESLint fixes                          |
