@@ -41,21 +41,29 @@ describe('patient listing service', () => {
     });
   });
 
-  it('uses the patient text index for bounded search', async () => {
+  it('partially searches patient identity and condition fields', async () => {
     const dependencies = {
       find: mock(async () => [patient]),
       count: mock(async () => 1),
     };
 
     await createListPatientsService(dependencies)({
-      search: 'Rahim',
+      search: 'tens',
       page: 1,
       limit: 10,
       sortBy: 'createdAt',
       sortOrder: 'desc',
     });
 
-    const filter = { $text: { $search: 'Rahim' } };
+    const partial = /tens/i;
+    const filter = {
+      $or: [
+        { name: partial },
+        { condition: partial },
+        { email: partial },
+        { phone: partial },
+      ],
+    };
     expect(dependencies.find).toHaveBeenCalledWith(
       expect.objectContaining({ filter }),
     );
@@ -71,7 +79,7 @@ describe('patient listing service', () => {
     const createdTo = new Date('2026-01-31T23:59:59.999Z');
 
     await createListPatientsService(dependencies)({
-      condition: 'Hypertension',
+      condition: 'tension',
       doctorId: patient.doctorId.toString(),
       createdFrom,
       createdTo,
@@ -83,7 +91,7 @@ describe('patient listing service', () => {
 
     const filter = {
       doctorId: patient.doctorId,
-      condition: 'Hypertension',
+      condition: /tension/i,
       createdAt: { $gte: createdFrom, $lte: createdTo },
     };
     expect(dependencies.find).toHaveBeenCalledWith(

@@ -8,6 +8,7 @@ import {
   createPaginationMeta,
   type PaginationMeta,
 } from '../../utils/pagination.js';
+import { createPartialMatch } from '../../utils/search.js';
 import { DoctorModel } from '../doctors/doctor.model.js';
 import { PatientModel } from './patient.model.js';
 import type { Patient } from './patient.types.js';
@@ -119,11 +120,20 @@ const createPatientFilter = (
 ): QueryFilter<Patient> => {
   const filter: QueryFilter<Patient> = {
     ...(doctorId ? { doctorId } : {}),
-    ...(query.search ? { $text: { $search: query.search } } : {}),
   };
 
+  if (query.search) {
+    const search = createPartialMatch(query.search);
+    filter.$or = [
+      { name: search },
+      { condition: search },
+      { email: search },
+      { phone: search },
+    ];
+  }
+
   if (query.condition) {
-    filter.condition = query.condition;
+    filter.condition = createPartialMatch(query.condition);
   }
 
   if (query.createdFrom || query.createdTo) {

@@ -97,16 +97,16 @@ Returns `201 Created` with the created doctor in `data.doctor`.
 
 Query parameters:
 
-| Parameter                  | Description                                                       |
-| -------------------------- | ----------------------------------------------------------------- |
-| `search`                   | Full-text search across name, specialization, hospital, and email |
-| `specialization`           | Exact specialization filter                                       |
-| `hospital`                 | Exact hospital filter                                             |
-| `createdFrom`, `createdTo` | Inclusive creation timestamp range                                |
-| `page`                     | Positive page number; defaults to `1`                             |
-| `limit`                    | Page size from `1` to `100`; defaults to `10`                     |
-| `sortBy`                   | `name`, `specialization`, `hospital`, or `createdAt`              |
-| `sortOrder`                | `asc` or `desc`                                                   |
+| Parameter                  | Description                                                                             |
+| -------------------------- | --------------------------------------------------------------------------------------- |
+| `search`                   | Case-insensitive partial search across name, specialization, hospital, email, and phone |
+| `specialization`           | Case-insensitive partial specialization filter                                          |
+| `hospital`                 | Case-insensitive partial hospital filter                                                |
+| `createdFrom`, `createdTo` | Inclusive creation timestamp range                                                      |
+| `page`                     | Positive page number; defaults to `1`                                                   |
+| `limit`                    | Page size from `1` to `100`; defaults to `10`                                           |
+| `sortBy`                   | `name`, `specialization`, `hospital`, or `createdAt`                                    |
+| `sortOrder`                | `asc` or `desc`                                                                         |
 
 ```json
 {
@@ -155,16 +155,16 @@ Query parameters:
 
 The doctor-specific listing supports the same parameters except `doctorId`.
 
-| Parameter                  | Description                                    |
-| -------------------------- | ---------------------------------------------- |
-| `search`                   | Full-text search across name, email, and phone |
-| `doctorId`                 | Exact doctor filter on the global listing      |
-| `condition`                | Exact condition filter                         |
-| `createdFrom`, `createdTo` | Inclusive creation timestamp range             |
-| `page`                     | Positive page number; defaults to `1`          |
-| `limit`                    | Page size from `1` to `100`; defaults to `10`  |
-| `sortBy`                   | `name`, `condition`, `age`, or `createdAt`     |
-| `sortOrder`                | `asc` or `desc`                                |
+| Parameter                  | Description                                                              |
+| -------------------------- | ------------------------------------------------------------------------ |
+| `search`                   | Case-insensitive partial search across name, condition, email, and phone |
+| `doctorId`                 | Exact doctor filter on the global listing                                |
+| `condition`                | Case-insensitive partial condition filter                                |
+| `createdFrom`, `createdTo` | Inclusive creation timestamp range                                       |
+| `page`                     | Positive page number; defaults to `1`                                    |
+| `limit`                    | Page size from `1` to `100`; defaults to `10`                            |
+| `sortBy`                   | `name`, `condition`, `age`, or `createdAt`                               |
+| `sortOrder`                | `asc` or `desc`                                                          |
 
 ### Update patient
 

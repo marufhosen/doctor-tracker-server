@@ -128,7 +128,7 @@ Tokens are delivered only through scoped cookies. Unsafe browser requests requir
 
 ### Data model and queries
 
-Each patient belongs to exactly one doctor. Text indexes support bounded search and compound indexes cover common ownership, filter, date, and stable-sort patterns. List reads use lean documents, bounded page sizes, and deterministic `_id` tie-breaking.
+Each patient belongs to exactly one doctor. Search inputs are length-bounded and safely escaped for case-insensitive partial matching; compound indexes cover common ownership, date, and stable-sort patterns. List reads use lean documents, bounded page sizes, and deterministic `_id` tie-breaking.
 
 Dashboard data is calculated from doctor and patient collections with counting queries and aggregation pipelines. No duplicate analytics collection is maintained.
 

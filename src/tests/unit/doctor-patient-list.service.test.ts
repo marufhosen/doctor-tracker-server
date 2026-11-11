@@ -47,14 +47,23 @@ describe('doctor patient listing service', () => {
     };
 
     await createListDoctorPatientsService(dependencies)(doctorId.toString(), {
-      search: 'Rahim',
+      search: 'tension',
       page: 1,
       limit: 10,
       sortBy: 'createdAt',
       sortOrder: 'desc',
     });
 
-    const filter = { doctorId, $text: { $search: 'Rahim' } };
+    const partial = /tension/i;
+    const filter = {
+      doctorId,
+      $or: [
+        { name: partial },
+        { condition: partial },
+        { email: partial },
+        { phone: partial },
+      ],
+    };
     expect(dependencies.find).toHaveBeenCalledWith(
       expect.objectContaining({ filter }),
     );

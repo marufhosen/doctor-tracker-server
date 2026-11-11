@@ -161,11 +161,13 @@
           {
             "name": "specialization",
             "in": "query",
+            "description": "Case-insensitive partial specialization match",
             "schema": { "type": "string", "maxLength": 120 }
           },
           {
             "name": "hospital",
             "in": "query",
+            "description": "Case-insensitive partial hospital match",
             "schema": { "type": "string", "maxLength": 160 }
           },
           { "$ref": "#/components/parameters/CreatedFrom" },
@@ -265,6 +267,7 @@
           {
             "name": "condition",
             "in": "query",
+            "description": "Case-insensitive partial condition match",
             "schema": { "type": "string", "maxLength": 200 }
           },
           { "$ref": "#/components/parameters/CreatedFrom" },
@@ -348,6 +351,7 @@
           {
             "name": "condition",
             "in": "query",
+            "description": "Case-insensitive partial condition match",
             "schema": { "type": "string", "maxLength": 200 }
           },
           {
@@ -549,6 +553,7 @@
       "Search": {
         "name": "search",
         "in": "query",
+        "description": "Case-insensitive partial match across the resource's searchable fields",
         "schema": { "type": "string", "minLength": 1, "maxLength": 100 }
       },
       "CreatedFrom": {

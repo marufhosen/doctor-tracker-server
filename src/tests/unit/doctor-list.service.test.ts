@@ -60,7 +60,7 @@ describe('doctor listing service', () => {
     expect(result.meta.totalPages).toBe(0);
   });
 
-  it('uses the bounded MongoDB text index for search', async () => {
+  it('partially searches doctor identity, specialization, and hospital fields', async () => {
     const dependencies = {
       find: mock(async () => [doctor]),
       count: mock(async () => 1),
@@ -68,14 +68,23 @@ describe('doctor listing service', () => {
     const listDoctors = createListDoctorsService(dependencies);
 
     await listDoctors({
-      search: 'Samira Cardiology',
+      search: 'card',
       page: 1,
       limit: 10,
       sortBy: 'createdAt',
       sortOrder: 'desc',
     });
 
-    const filter = { $text: { $search: 'Samira Cardiology' } };
+    const partial = /card/i;
+    const filter = {
+      $or: [
+        { name: partial },
+        { specialization: partial },
+        { hospital: partial },
+        { email: partial },
+        { phone: partial },
+      ],
+    };
     expect(dependencies.find).toHaveBeenCalledWith(
       expect.objectContaining({ filter }),
     );
@@ -92,8 +101,8 @@ describe('doctor listing service', () => {
     const createdTo = new Date('2026-01-31T23:59:59.999Z');
 
     await listDoctors({
-      specialization: 'Cardiology',
-      hospital: 'City Hospital',
+      specialization: 'card',
+      hospital: 'city',
       createdFrom,
       createdTo,
       page: 1,
@@ -103,8 +112,8 @@ describe('doctor listing service', () => {
     });
 
     const filter = {
-      specialization: 'Cardiology',
-      hospital: 'City Hospital',
+      specialization: /card/i,
+      hospital: /city/i,
       createdAt: { $gte: createdFrom, $lte: createdTo },
     };
     expect(dependencies.find).toHaveBeenCalledWith(

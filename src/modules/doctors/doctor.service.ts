@@ -7,6 +7,7 @@ import {
   createPaginationMeta,
   type PaginationMeta,
 } from '../../utils/pagination.js';
+import { createPartialMatch } from '../../utils/search.js';
 import { ApiError } from '../../utils/api-error.js';
 import { DoctorModel } from './doctor.model.js';
 import type { Doctor } from './doctor.types.js';
@@ -89,16 +90,25 @@ const defaultListDependencies: DoctorListDependencies = {
 };
 
 const createDoctorFilter = (query: DoctorListQuery): QueryFilter<Doctor> => {
-  const filter: QueryFilter<Doctor> = query.search
-    ? { $text: { $search: query.search } }
-    : {};
+  const filter: QueryFilter<Doctor> = {};
+
+  if (query.search) {
+    const search = createPartialMatch(query.search);
+    filter.$or = [
+      { name: search },
+      { specialization: search },
+      { hospital: search },
+      { email: search },
+      { phone: search },
+    ];
+  }
 
   if (query.specialization) {
-    filter.specialization = query.specialization;
+    filter.specialization = createPartialMatch(query.specialization);
   }
 
   if (query.hospital) {
-    filter.hospital = query.hospital;
+    filter.hospital = createPartialMatch(query.hospital);
   }
 
   if (query.createdFrom || query.createdTo) {
